@@ -1,0 +1,40 @@
+chapter 8
+
+# 3 level cluster randomized trial
+
+#rho1 correlation btw obs's within smaller cluster (school)
+#rho2 correlation btw obs's (sch means) within larger cluster (district)
+
+p3crt=function(K=44,J=5,n=12,gamma001=.3,sd=1,rho1=.3,rho2=.2){
+a=.05
+sigma2=sd^2*(1-rho1)
+tau_pi=sd^2*rho1*(1-rho2)
+tau_b=sd^2*rho1*rho2
+
+lambda=gamma001/sqrt(4*(tau_b+(tau_pi+sigma2/n)/J)/K)
+t0=qt(1-a/2,K-2)
+1-pt(t0,K-2,lambda)+pt(-t0,K-2,lambda)
+}
+
+p3crt()
+
+#multisite cluster randomized trial
+# rho: intraclass correlation within cluster conditional on site
+# rho=tau_pi /( tau_pi +sigma2)
+# sd^2=sigma2 + tau_pi: total variance conditional on site or 
+#                       within-site total variance  
+# sd^2 : tau_u1 = 1 : p within-site variance vs between-site variance
+
+p4mcrt=function(K=10,J=8,n=12,gamma010=.45,sd=1, rho=.10,p=.1){
+a=.05
+sigma2=sd^2*(1-rho)
+tau_pi=sd^2*rho
+tau_u1=sd^2*p
+
+lambda=gamma010*sqrt(K)/sqrt(4*(tau_pi + sigma2/n)/J + tau_u1)
+t0=qt(1-a/2,K-1)
+1-pt(t0,K-1,lambda)+pt(-t0,K-1,lambda)
+}
+
+p4mcrt()
+

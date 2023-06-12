@@ -1,0 +1,88 @@
+#common language effect size
+d=c(.2,.5,.8)
+1-pnorm(-d/sqrt(2))
+
+n=62
+a=.05          # a stands for alpha
+d=.5           # d=Delta/sigma
+nc=d*sqrt(n/2)   # nc stands for noncentrality parameter
+
+1-pnorm(qnorm(1-a)-nc) # power in a one-sided z test
+
+pnorm(nc-qnorm(1-a/2))+pnorm(qnorm(a/2)-nc) # power in a two-sided z test
+
+# es: overlap between two populations
+d<-c(.2,.5,.8)
+2*pnorm(-d*.5)
+[1] 0.9203443 0.8025873 0.6891565
+
+#power for one-sample t
+n=25:30            #n=25,26,27,28,29,30
+v=n-1
+a=.05
+d=(2750-3000)/500  #sigma=500
+nc=d*sqrt(n)
+pt(qt(a,v),v,nc)
+
+curve(pt(qt(.05,x-1),x-1,-.5*sqrt(x)),5,80,ylab="Power",xlab="n")
+
+#power for independent t
+
+n1=65
+n2=65
+v=n1+n2-2 
+a=.05                     # a stands for alpha
+d=.5                      # d=Delta/sigma
+#d<-c(50/90,50/110)                      # d=Delta/sigma
+nc=d*sqrt(n1*n2/(n1+n2))  # nc stands for noncentrality parameter
+
+1-pt(qt(1-a/2,v),v,nc)+pt(qt(a/2,v),v,nc)
+
+#power for dependent t
+n=34
+a=.05  # alpha
+r=.5   #correlation 
+d=.5   # d=Delta/sigma
+nc=sqrt(n/2)*d/sqrt(1-r)
+
+1-pt(qt(1-a/2,n-1),n-1,nc)+pt(qt(a/2,n-1),n-1,nc)
+
+
+par(family="serif")
+
+
+#figure 2.3 minimum effect size vs. sample size
+
+curve(sqrt(2/x)*(qnorm(1-.2)+qnorm(1-.05/2)), 20,80,xlab="n",ylab=expression(Delta))
+curve(sqrt(2/x)*(qnorm(1-.1)+qnorm(1-.05/2)),20,80,add=TRUE)
+text(58, .68, labels=".9 power",adj=c(1,0))
+text(32, .60,labels=".8 power",adj=c(0,1))
+
+#figure 2.4 power curve for independent t
+
+pt1<-function(n,d=50/100){
+v=2*n-2 
+a=.05     # a stands for alpha  d=Delta/sigma
+nc=d*sqrt(n/2)  # nc stands for noncentrality parameter
+1-pt(qt(1-a/2,v),v,nc)+pt(qt(a/2,v),v,nc)
+}
+
+curve(pt1(x),5,300,xlab="sample size n", ylab="Power")
+curve(pt1(x,.3),5,300,lty="dashed",add=TRUE)
+ 
+
+#figure 2.5 power curve for dependent t
+
+#correlation btw pretest and posttest r=.5  
+#standardized effect size d=Delta/sigma d=.5   
+
+pt2=function(n=34,r=.5,d=.5){
+a=.05  # alpha
+nc=sqrt(n/2)*d/sqrt(1-r)
+
+1-pt(qt(1-a/2,n-1),n-1,nc)+pt(qt(a/2,n-1),n-1,nc)
+}
+
+curve(pt2(x),5,100,xlab="sample size n", ylab="Power")
+curve(pt2(x,r=.3),5,100,lty="dashed",add=TRUE)
+

@@ -1,0 +1,55 @@
+getLetExp	%>%	Subject	TrialNum	Word.RT	as_factor	as_tibble	c	case_when	difficulty	displayType	glimpse	goNoGo	list	mutate	reactionTime	read.delim	replace_na	select	sigDet	signalNoise	subject	~
+getMSITExp	glimpse	read.delim
+getSubs	%>%	SubjectID	age	c	case_when	condition	difficult	difficultyRating	effort	effortRating	factor	fatigueRating	firstLanguage	frustrated	frustrationRating	gender	glimpse	lang	langother	mutate	read_csv	rename	select	subject	taskDifficulty	tired	~
+lm.eTaskHit	%>%	==	eTask	filter	lm	sigDet	tidy	~
+lm.eTaskHit.boxcox	gg_boxcox	library	lmETaskHit
+lm.eTaskHit.boxcox.show	gg_boxcox	ggtitle	lmETaskH.FA	xlim
+lmETaskHit.boxcox.calc	library	lmETaskHit	powerTransform
+lm.eTaskHit.log	%>%	lmETaskH.FA	log	mutate	reactionTime	update	~
+gg_subjectRating	%>%	aes	c	difficultyRating	effortRating	frustrationRating	geom_violin	ggplot	labs	mutate	rating	taskDifficulty
+gg_subjectRating-show	%>%	aes	c	difficultyRating	effortRating	frustrationRating	geom_violin	ggplot	labs	mutate	rating	taskDifficulty
+lm.mTask	lm	mTask	~
+lm.mTask.boxcox	gg_boxcox	lmMTask
+lm.mTask.boxcox.show	gg_boxcox	ggtitle	lmMTask	xlim
+lm.mTask.boxcox.calc	%>%	lmMTask	powerTransform	print
+lm.mTask.log	%>%	AIC	as_tibble	kable	kable_styling	lm	lmMTask	log	mutate	reactionTime	~
+lme.mTask.log	lmer	mTask	~
+lme.mTask.log.2	%>%	AIC	as_tibble	kable	kable_styling	lmeMTaskLog	lmer	mTask	~
+tidy.re.lme.mTask.log.2	%>%	lmeMTaskLog2	mkables	tidy
+lme.mTask.log.2.plot	%>%	dwplot	geom_vline	library	lmeMTaskLog2	tidy
+lme.mTask.log.2.plot.show	%>%	dwplot	geom_vline	lmeMTaskLog2	tidy
+clean-up	.knitr.author	rm
+lm.eTaskHit.log.AIC	%>%	AIC	as_tibble	kable	kable_styling	lmETaskH.FA	lmeTaskH.FA.Log
+fullJoin	%>%	dim	drop_na	eTaskBySub	full_join	glimpse	subjectInfo
+eTaskHit.FA	!=	%>%	difficulty	eTask	filter	group_by	mutate	n	print	select	sigDet	signalNoise	sum	summarize
+tabyl.eTask	difficulty	eTaskSum	freq	sigDet	table	with
+lm.eTask	!=	%>%	eTask	filter	lm	sigDet	~
+lm.eTask.boxcox.calc	library	lmETaskH.FA	powerTransform	summary
+lm.eTask.boxcox	gg_boxcox	library	lmETaskH.FA
+tidyMSITExp	%>%	Digits.CRESP	Digits.RESP	Digits.RT	Subject	as_factor	as_tibble	case_when	factor	glimpse	msit	transmute	~
+readSubs	glimpse	read_csv
+tidySubs	%>%	SubjectID	c	case_when	condition	difficult	difficultyRating	effort	effortRating	factor	fatigueRating	frustrated	frustrationRating	gender	glimpse	lang	langother	mutate	rename	select	subject	subs	taskDifficulty	tired	~
+readLetExp	glimpse	read.delim
+tidyLetExp	%>%	Subject	TrialNum	Word.RT	as_factor	as_tibble	c	case_when	displayType	glimpse	goNoGo	letE	list	mutate	reactionTime	replace_na	select	sigDet	signalNoise	subject	taskDifficulty	~
+eTaskRT	!=	%>%	c	eTask	exp	filter	geomMean.eTask.RT	group_by	kable	kable_styling	log	mean	meanRTlog	mutate	n	prop	reactionTime	reactionTimeLog	select	sigDet	signalNoise	sum	summarize	taskDifficulty
+eTaskRTbySub	!=	%>%	c	eTask	exp	filter	geomMean.eTask.RT	glimpse	group_by	log	mean	meanRTlog	mutate	n	prop	reactionTime	reactionTimeLog	select	sigDet	signalNoise	subject	sum	summarize	taskDifficulty
+gg_subjectProp	%>%	==	aes	c	eTaskSub	filter	geom_violin	ggplot	labs	prop	sigDet	taskDifficulty
+gg_subjectProp-show	%>%	==	aes	c	eTaskSub	filter	geom_violin	ggplot	labs	prop	sigDet	taskDifficulty
+gg_subjectRT	aes	c	eTaskSub	geomMean.eTask.RT	geom_violin	ggplot	labs	sigDet	taskDifficulty	theme
+gg_subjectRT-show	aes	c	eTaskSub	geomMean.eTask.RT	geom_violin	ggplot	labs	sigDet	taskDifficulty	theme
+MSIT.accuracy	%>%	GoodmanKruskalGamma	GoodmanKruskalTau	Lambda	cramer.v	kable	kable_styling	library	mTask	response	stimulus	table	tribble	with	~
+mTaskAccuracy	%>%	==	cramer.v	filter	library	mTask	print	response	select	stimulus	table	trialType
+mTaskAccuracyByS	%>%	cv	data	glimpse	group_by	mTask	map	mutate	nest	select	subject	trialType	ungroup	unnest	~
+gg_mTaskCramerS	$	%>%	Congruent	Cramer_V	Incongruent	aes	bySubject	c	geom_violin	ggplot	labs	mutate	spread	tibble	trialType
+gg_mTaskCramerS-show	$	%>%	Congruent	Cramer_V	Incongruent	aes	bySubject	c	geom_violin	ggplot	labs	mutate	spread	tibble	trialType
+eTaskRTkable	%>%	eTaskSum	kable
+fullJoin1	%>%	dim	drop_na	eTaskBySub	full_join	glimpse	subjectInfo
+fullJoin2	%>%	Congruent	CramerV	Incongruent	congruence	count	dim	drop_na	full_join	gather	glimpse	mTaskCramerS	mkable	mutate	n	prop.table	taskDifficulty
+gg_eTaskmTaskSub	CramerV	aes	congruence	eTaskmTaskSubT	geom_boxplot	ggplot	labs	taskDifficulty
+gg_eTaskmTaskSub-show	CramerV	aes	congruence	eTaskmTaskSubT	geom_boxplot	ggplot	labs	taskDifficulty
+redefineKable	%>%	::	kable_styling
+gg_eTaskRatingmTaskCong	CramerV	aes	congruence	eTaskmTaskSubT	geom_point	ggplot	labs	rating
+gg_eTaskRatingmTaskCong-show	CramerV	aes	congruence	eTaskmTaskSubT	geom_point	geom_smooth	ggplot	labs	rating
+mTaskFullJoin	%>%	dim	drop_na	eTaskmTaskSub	full_join	glimpse	mTask
+gg.all	aes	all	geom_violin	ggplot	labs	reactionTimeLog	taskDifficulty	trialType
+gg.all-show	aes	all	geom_violin	ggplot	labs	reactionTimeLog	taskDifficulty	trialType

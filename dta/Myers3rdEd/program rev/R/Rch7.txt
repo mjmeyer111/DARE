@@ -1,0 +1,142 @@
+#ch7
+####################################################
+#two arm cluster randomized trial
+
+#default values from Englert cited in Raudenbush and Bryk 2002
+
+p4crt=function(J=25,n=12,gamma01=.188,sd=sqrt(.258^2+.019),rho=.019/(.258^2+.019)){
+
+tau=sd^2*rho
+sigma2=sd^2*(1-rho)
+
+lambda=gamma01/sqrt(4*(sigma2/n + tau)/J)
+a=.05
+t0=qt(1-a/2,J-2)
+1-pt(t0,J-2,lambda)+pt(-t0,J-2,lambda)
+}
+p4crt()
+
+par(family="serif")
+curve(p4crt(x),4,100, ylab="Power",xlab="J")
+#  dotted line for gamma01=.4
+curve(p4crt(x, , .15),4,100, ylab="Power",xlab="J",add=TRUE,lty=2) 
+
+#tabulate power values
+for(J in 10 :30 )cat(J,"\t", p4crt(J,),"\n")
+
+curve(p4crt(,x,),5,50, ylab="Power",xlab="n")
+
+par(mfrow=c(1,2))
+
+curve(p4crt(,,x),.1,.5, ylab="Power",xlab=expression(paste("Effect size ", gamma["01"])) )
+
+curve(p4crt(,,,,x),.05,.7, ylab="Power",xlab=expression(paste("intraclass correlation ",rho)) )
+
+##############################################
+# three arm cluster randomized trial
+
+#HbAC1 % 
+#Ref Sidorov et al 2000 Am J Manag Care 
+#    Rothman et al 2003 Am J Med Qual
+
+p4crt3=function(J,n=40,rho=.05,D1=1.9,D2=1,sd=2){
+a=.05
+b1=(D1+D2)/2
+b2=D1-D2
+
+tau=sd^2*rho
+sigma2=sd^2*(1-rho)
+
+lambda1=b1/sqrt(4.5*(tau+sigma2/n)/J)
+lambda2=b2/sqrt(6*(tau+sigma2/n)/J)
+lambda=lambda1^2 + lambda2^2 
+
+f0=qf(1-a,2,J-3)
+p=1-pf(f0,2,J-3, lambda)
+
+nc1=D1/sqrt(6*(tau+sigma2/n)/J)
+nc2=(D1-D2)/sqrt(6*(tau+sigma2/n)/J)
+
+t0=qt(1-a/2/2,J-3)
+p13=1-pt(t0,J-3,nc1)+pt(-t0,J-3,nc1)
+p12=1-pt(t0,J-3,nc2)+pt(-t0,J-3,nc2)
+
+cat(rho, "\t", J,"\t", p,"\t", p13,"\t", p12,"\n")
+}
+
+for(J in seq(5,30,by=1)){p4crt3(J)}
+for(J in seq(30,60,by=1)){p4crt3(J,rho=.10)}
+
+###############################################################
+# multi-site randomized trial with two treatments at site
+# effect of behavioral therapy and fluoxetine on anorexia
+
+p4mst2=function(J=20,n=30,gamma10=.5,sigma2=1.5^2,tau1=1.5^2/9){
+a=.05
+lambda=gamma10/sqrt((4*sigma2/n + tau1)/J)
+
+t0=qt(1-a/2,J-1)
+1-pt(t0,J-1,lambda)+pt(-t0,J-1,lambda)
+}
+
+p4mst2()
+
+for(J in 15:30) cat(J,"\t",p4mst2(J,),"\n")
+
+###############################################################
+# multi-site randomized trial with three treatments at site
+
+#postpartum depression psychotheray/peer support/control
+#ref Dennis et al 2009 BMJ
+#    Stevenson et al 2010 Health Tech Assessment
+# total variance=sigma2+tau=4.6^2
+# tau : sigma2 = 1 :10
+
+p4mst3=function(J=12,n=45,D1=3.4,D2=1.1,sigma2=4.6^2/1.1,tau=4.6^2/1.1*.1){
+c1=c(.5,.5,-1)
+c2=c(1,-1,0)
+sc1=sum(c1^2)
+sc2=sum(c2^2)
+
+tau1=sc1*tau
+tau2=sc2*tau
+
+gamma10=(D1+D2)/2
+gamma20=D1-D2
+
+lambda1=sqrt(J)*gamma10/sqrt(sc1*3*sigma2/n+tau1)
+lambda2=sqrt(J)*gamma20/sqrt(sc2*3*sigma2/n+tau2)
+
+lambda=lambda1^2+lambda2^2
+
+#power for omnibus test
+
+a=.05
+f0=qf(1-a,2,2*(J-1))
+p=1-pf(f0,2,2*(J-1),lambda)
+
+#power for orthogonal contrast
+
+t0=qt(1-a/2,J-1)
+p1=1-pt(t0,J-1,lambda1)+pt(-t0,J-1,lambda1)
+p2=1-pt(t0,J-1,lambda2)+pt(-t0,J-1,lambda2)
+
+#power for T1-T3
+t00=qt(1-a/2/2,J-1)
+nc13=sqrt(J)*D1/sqrt(sc2*3*sigma2/n+tau2)
+p13=1-pt(t00,J-1,nc13)+pt(-t00,J-1,nc13)
+
+#power for T2-T3
+
+nc23=sqrt(J)*D2/sqrt(sc2*3*sigma2/n+tau2)
+p23=1-pt(t00,J-1,nc23)+pt(-t00,J-1,nc23)
+
+cat(J, "\t",p,"\t", p1,"\t", p2, "\t",p13,"\t",p23,"\n")
+}
+
+p4mst3(7,)
+p4mst3()
+
+for(J in 6:35){p4mst3(J)}
+
+

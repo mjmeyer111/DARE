@@ -1,0 +1,115 @@
+# statistical power for Hotelling t
+# assume equal group size of n
+
+p4mt=function(n=30,d,R){
+ v1=length(d)
+ v2=2*n-v1-1
+ a=.05
+ f0=qf(1-a,v1,v2)
+ lambda= .5*n*t(d)%*%solve(R)%*%d
+ power=1-pf(f0,v1,v2, lambda)
+}
+
+d=matrix(c(40/120,70/150), nrow=2)
+R=matrix( c(1,.35,.35,1),nrow=2)
+
+p=p4mt(79,d,R)
+p
+
+par(family="serif")
+curve(p4mt(x,d,R),20,120,ylab="Statistical power",xlab="n")
+
+#manova 
+#GRE classroom coaching self-study
+
+D<-matrix( c(120,0,0,0,150,0,0,0,1),nrow=3)
+R<-matrix( c(1,.35,.62,.35,1,.22,.62,.22,1), nrow=3)
+
+a1=c(50-(50+20)/3, 20-(50+20)/3, -(50+20)/3)
+a2=c(70-(70+20)/3, 20-(70+20)/3, -(70+20)/3)
+a3=c(.5-(.5+.2)/3, .2-(.5+.2)/3, -(.5+.2)/3)
+a<-matrix(rbind(a1,a2,a3),nrow=3)
+
+E=D%*%R%*%D
+
+p4maov=function(n=30,a,E){
+
+p=nrow(a)
+k=ncol(a)
+
+v1=k-1
+v2=(n-1)*k
+
+t=sqrt((p^2*v1^2-4)/(p^2+v1^2-5))
+w=v1+v2-.5*(p+v1+1)
+
+df1=v1*p
+df2=w*t-.5*(p*v1-2)
+
+A=n*a%*%t(a)
+
+L=det(v2*E)/det(v2*E+A)
+es=L^(-1/t)-1
+lambda=(L^(-1/t)-1)*df2
+
+alpha=.05
+1-pf(qf(1-alpha,df1,df2),df1,df2,lambda)
+
+#cat("df1=",df1,"\t","df2=",df2,"\t","es=",es,"\t", "lambda=",lambda,"\t","p=",p,"\n")
+}
+
+p4maov(60,a,E)
+p4maov(71,a,E)
+
+#mancova Rx
+
+D<-matrix( c(120,0,0,0,150,0,0,0,1),nrow=3)
+R<-matrix( c(1,.35,.62,.35,1,.22,.62,.22,1), nrow=3)
+
+a1=c(50-(50+20)/3, 20-(50+20)/3, -(50+20)/3)
+a2=c(70-(70+20)/3, 20-(70+20)/3, -(70+20)/3)
+a3=c(.5-(.5+.2)/3, .2-(.5+.2)/3, -(.5+.2)/3)
+a<-matrix(rbind(a1,a2,a3),nrow=3)
+
+Ryx=matrix(c(.64,.34,.53),nrow=1)
+Rx=R-t(Ryx)%*%Ryx
+Ex=D%*%Rx%*%D
+
+p4macov=function(n=30,a,Ex,q=1){
+
+p=nrow(a)
+k=ncol(a)
+
+v1=k-1
+v2=(n-1)*k-q
+
+t=sqrt((p^2*v1^2-4)/(p^2+v1^2-5))
+w=v1+v2-.5*(p+v1+1)
+
+df1=v1*p
+df2=w*t-.5*(p*v1-2)
+
+A=n*(a%*%t(a))
+L=det(v2*Ex)/det(v2*Ex+A)
+lambda=(L^(-1/t)-1)*df2
+
+a=.05
+1-pf(qf(1-a,df1,df2),df1,df2,lambda)
+}
+
+
+p4macov(60,a,Ex)
+
+#MANCOVA vs MANOVA plot
+
+p<-c(); px<-c()
+n=5:120
+for (i in n){
+ p[i]=p4maov(i,a,E)
+ px[i]=p4macov(i,a,Ex)
+}
+
+plot(n,px[n],type='l',xlab="n",ylab="Statistical power")
+lines(n,p[n],lty=2)
+legend(50,.4,legend=c("MANCOVA","MANOVA"),lty=c("solid","dotted"))
+

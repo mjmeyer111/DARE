@@ -1,0 +1,113 @@
+mu<-c(8,11,15)
+s<-4
+
+p4f=function(n,mu,s,a=.05){
+  nu1=length(mu)-1
+  nu2=length(mu)*(n-1)
+  f0=qf(1-a,nu1,nu2)
+  lambda=n*sum( (mu -mean(mu))^2 )/s^2
+  
+  return(1-pf(f0,nu1,nu2,lambda))
+}
+
+#table 4.1
+
+for(n in 5:12){cat("n=", n, "\t", "power=", p4f(n,mu,s), "\n")}
+
+#figure 4.1
+
+windows(3.55,2.85)
+par(family="serif", mar=c(4,4,1,1), cex=11/12)
+
+curve(p4f(x,mu,s),5,20, ylab="power", xlab=expression(italic("n")) )
+
+#contrast tests
+c1=c(.5,.5,-1)
+c2=c(1,-1,0)
+phi1=(15+11)/2-8
+phi2=15-11
+
+p=function(n=5,J=3,phi=phi1,c=c1,s=4){
+  a=.05
+  t0=qt(1-a/2,J*(n-1))
+  nc=phi/(s*sqrt(sum(c^2)/n))
+  1-pt(t0,J*(n-1),nc)+pt(-t0,J*(n-1),nc)
+}
+
+for(n in 5:30) cat('n=',n,'\t','power=',p(n),'\n')
+for(n in 5:30) cat('n=',n,'\t','power=',p(n,c=c2,phi=phi2),'\n')
+
+#figure 4.2
+curve(p(x),5,30,ylab="power",xlab=expression(italic("n")))
+curve(p(x,c=c2,phi=phi2),5,30,add=TRUE,lty=2)
+
+#two-way anova
+pa=function(n=25,J=3,K=2,s=110,mua=c(650,670,720)){
+a=.05
+v1=length(mua)-1
+v2=J*K*(n-1)
+ss=var(mua)*v1
+nc=n*K*ss/s^2
+f0=qf(1-a,v1,v2)
+1-pf(f0,v1,v2,nc)
+}
+
+pb=function(n=25,J=3,K=2,s=110,mub=c(660,700)){
+a=.05
+v1=length(mub)-1
+v2=J*K*(n-1)
+ss=var(mub)*v1
+nc=n*J*ss/s^2
+f0=qf(1-a,v1,v2)
+1-pf(f0,v1,v2,nc)
+}
+
+pa(40)  
+pb(40)  
+
+#figure 4.3
+curve(pa(x),5,80,ylab="power",xlab=expression(italic("n")),lty=2)
+curve(pb(x),5,80,add=TRUE)
+legend(30,.5,legend=c("factor A","factor B"),lty=c("dotted","solid"))
+
+
+#power for testing interaction
+n=7
+s=1
+a=.05
+beta4=.75
+beta5=-2.5
+
+x1=c(rep(1/3,2), rep(1/3,2), rep(-2/3,2))
+x2=c(rep(1/2,2), rep(-1/2,2), rep(0,2))
+x3=rep(c(1/2,-1/2),3)
+x4=x1*x3
+x5=x2*x3
+
+x4x4=sum(x4^2)
+x5x5=sum(x5^2)
+
+esab=beta4^2*x4x4+beta5^2*x5x5
+ncab=n*esab/s^2
+f0=qf(1-a,(3-1)*(2-1), 3*2*(n-1))
+1-pf(f0,(3-1)*(2-1), 3*2*(n-1),ncab)
+
+#random effects anova
+p=function(J=4,n=20,rho=.3){
+ a=.05
+ f0=qf(1-a,J-1,J*(n-1))
+ m=(1-rho)/(n*rho+(1-rho))
+ 1-pf(f0*m,J-1,J*(n-1))
+}
+
+p(J=3:6) # 3:6 supplies J with the values 3,4,5,6 
+
+
+
+
+
+
+
+
+
+

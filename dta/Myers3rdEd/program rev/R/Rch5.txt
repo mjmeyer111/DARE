@@ -1,0 +1,42 @@
+# statistical power for simple regression
+
+p4sr=function(n=20,b1=.6,sigma=12,sigmax=15){
+  f0=qf(.95,1,n-2)
+  lambda=b1^2*sigmax^2*n/sigma^2
+  return(1-pf(f0,1,n-2,lambda))
+}
+
+p4sr()
+#>[1] 0.8869702
+
+# plot of statistical power 
+curve(p4sg(x), 10,50, ylab="Statistical power", xlab="n")
+
+#power for testing a correlation
+
+p4r=function(n=20,r=.40){
+ a=.05
+ t0=qt(1-a/2,n-2)
+ nc=r*sqrt(n)/sqrt(1-r^2)
+ 1-pt(t0,n-2,nc)+pt(-t0,n-2,nc)
+}
+
+for(n in 10:50) cat(n, '\t', p4r(n),'\n')
+
+# power in multiple regression
+
+#default values come from cohen p.432  
+p4mr=function(n=90, a=.01,p=5,df1=2,r2s=.12,r2e=1-.25,m='fixed'){
+ df2=n-p-1
+ f2=r2s/r2e
+ if (m=='fixed') nc=f2*n else nc=f2*(df1+df2+1) 
+# nc=f2*(df1+df2+1)  Cohen 1988 p.414, Gatsonis and Sampson 1989
+
+ f0=qf(1-a,df1,df2)
+ p=1-pf(f0,df1,df2,nc)
+cat('f0=',f0,'\t','nc=',nc,'\t','power=',p)
+}
+
+#Cohen p432 power is 0.7725136
+p4mr(m='random')
+

@@ -1,0 +1,783 @@
+\PassOptionsToPackage{dvipsnames}{xcolor}
+\documentclass{article}
+\usepackage{graphicx}
+\usepackage{tikz}
+\usetikzlibrary{decorations.pathreplacing}
+\usepackage{booktabs}
+\usepackage{float}
+\usepackage[style=apa, natbib]{biblatex}
+  \addbibresource{/Users/mk/Dropbox/Papers/mk.bib}
+
+%\usepackage[dvipsnames]{xcolor}
+\usepackage{mdframed}
+\mdfdefinestyle{style2}{backgroundcolor=gray!10}
+
+\usepackage{xspace}
+\newcommand{\code}[1]{\textup{\texttt{\textcolor{violet}{#1}}}}
+
+\usepackage{hyperref}
+\usepackage[capitalize, noabbrev]{cleveref}
+\usepackage{minitoc}
+
+\newcommand\myshade{85}
+\colorlet{mylinkcolor}{violet}
+\colorlet{mycitecolor}{YellowOrange}
+\colorlet{myurlcolor}{Aquamarine}
+
+\hypersetup{
+  linkcolor  = mylinkcolor!\myshade!black,
+  citecolor  = mycitecolor!\myshade!black,
+  urlcolor   = myurlcolor!\myshade!black,
+  colorlinks = true,
+}
+
+\title{A model data analysis: Ego depletion}
+\author{MK}
+
+\begin{document}
+
+\maketitle
+
+\dosecttoc
+\tableofcontents 
+
+\pagebreak
+
+<<packages, include = FALSE, cache = FALSE>>=
+library(tidyverse)
+filter <- dplyr::filter
+rename <- dplyr::rename
+select <- dplyr::select
+summarize <- dplyr::summarize
+library(tidymodels)
+library(broom.mixed)
+library(brms)
+library(car)
+library(dotwhisker)
+library(effects)
+library(extrafont)
+library(extrafontdb)
+library(foreach)
+library(foreign)
+library(formattable)
+library(ggfortify)
+library(gridExtra)
+library(haven)
+library(kableExtra)
+library(languageR)
+library(latex2exp)
+library(lindia)
+library(lintr)
+library(lme4)
+library(merTools)
+library(mgcv)
+library(predictmeans)
+library(printr)
+library(prob)
+library(qqplotr)
+library(R.utils)
+library(splines)
+library(stargazer)
+library(styler)
+library(texreg)
+library(WWGbook)
+library(xtable)
+@
+
+<<optKnitr, include = FALSE, cache = FALSE>>=
+opts_knit$set(
+	concordance = TRUE,
+	self.contained = TRUE,
+	verbose = TRUE
+)
+opts_chunk$set(
+	autodep = TRUE,
+	cache = TRUE,
+	cache.path = 'cache/graphics-',
+	comment = NA,
+	continue = '  ',
+	dev = 'pdf',
+	dev.args = list(pdf = list(colormodel = 'cmyk')),
+	echo = TRUE,
+	error = FALSE,
+	fig.align = 'center',
+	fig.dim = c(3, 3),
+	fig.path = 'figure/graphics-',
+	fig.show = 'hold',
+	highlight = TRUE,
+	message = FALSE,
+	out.width = '.5\\linewidth',
+	par = TRUE,
+	prompt = FALSE,
+	sanitize = TRUE,
+	size = 'footnotesize',
+	tidy = 'styler'
+)
+@
+
+\section{Ego depletion}
+
+Ego depletion is widely-debated topic in the psychological literature. It refers to the claim that people have less self-control in one domain after having to control themselves in another domain of their lives. Thus, one might expect that a person who performs a task that requires self-control (such as the suppression of thoughts, emotions, behavioral impulses, and habits) may not be able to exercise as much self-control in a subsequent task as a person who had not been required to engage in self-control. For example, people who had resisted tempting food, subsequently ate a larger amount of palatable (but unhealthy) food. Because it has been difficult to replicate studies of ego depletion, a group of psychologists in 23 labs independently conducted experiments using an agreed-upon standardized experimental method.
+
+\begin{mdframed}[frametitle = Method of the multilab replication of the ego-depletion effect, style = style2]\label{box:anExperiment}
+\sloppy
+\mdfsubtitle[subtitlefont = \bfseries\itshape, subtitlebackgroundcolor = gray!10, subtitleaboveskip = 0, subtitlebelowskip = 0]{Data Collection}
+Participants were randomly allocated to experimental (ego-depletion) or control (no depletion) groups.
+
+\mdfsubtitle[subtitlefont = \bfseries\itshape, subtitlebackgroundcolor = gray!10, subtitleaboveskip = 0, subtitlebelowskip = 0]{Procedure}
+They were told that the experiment was a study of speeded recognition of words and numbers. It consisted of two tasks: the \emph{``\code{e}'' task}, and the \emph{MSIT}, both of which we will describe in a moment. Participants first practiced 20 trials from each tasks. Then they did the ``\code{e}'' task, after which they rated how effortful, fatiguing, difficult, and frustrating it had been. They then did the second task.
+
+\mdfsubtitle[subtitlefont = \bfseries\itshape, subtitlebackgroundcolor = gray!10, subtitleaboveskip = 0, subtitlebelowskip = 0]{Materials}
+\emph{The ``\code{e}'' task.} There were two conditions: \emph{depletion} and \emph{no depletion}, in which participants responded to each word as it appeared on the screen. In the depletion condition, they pressed a button when the word contained the letter ``\code{e},'' and refrained from pressing if the ``\code{e}'' was next to or one letter away from a vowel (an example might be the word \code{done}). In the no-depletion version they pressed a button whenever the word contained ``\code{e}'' (for example, \code{done}). The main session consisted of 150 trials and lasted 7.5 minutes.
+
+\emph{Multi-source interference task (MSIT).} The MSIT requires response inhibition. The stimuli were sets of three digits (the numerals \code{1}, \code{2}, \code{3}, or \code{0}). Participants placed their right index, middle, and ring fingers on three keys on the keyboard. On each trial, one of the digits (the \emph{target}; \code{1}, \code{2}, or \code{3}) differed from the two identical \emph{distractors}. They pressed the key corresponding to the target digit. On \emph{congruent} trials, the target matched its position on the keyboard, the distractors were \code{0}s, and the size of the target differed from the distractors (for example: \code{0{\Large 2}0}). On \emph{incongruent} trials, the target did not match its position, the distractors were potential targets, and the different-size digit was not always the target (for example: \code{2{\Large 3}3}). The session consisted of 200 trials (100 congruent and 100 incongruent), which took about 10 minutes.
+\end{mdframed}
+
+The data herein were collected by the lab of Mark J. Brandt, Tilburg University, the Netherlands (OSF: \url{https://osf.io/x3y9b/}).
+
+\pagebreak
+
+\section{Import and tidy}
+
+\secttoc
+
+\subsection{\code{e} task}
+
+\subsubsection{Read in}
+
+<<redefineKable>>=
+mkable <- function(data) {
+  knitr::kable(data, booktabs = TRUE, digits = 2) %>%
+    kable_styling(position = 'center')
+}
+mkables <- function(data) {
+  knitr::kable(data, booktabs = TRUE, digits = 2) %>%
+    kable_styling(position = 'center', latex_options = 'scale_down')
+}
+@
+
+<<readLetExp>>=
+letE <-
+  read.delim('~/Dropbox/StatsBook/Book5/EgoDepletion/LetterE_EData.txt',
+             fileEncoding = 'UTF-16')
+# letE should be in package
+glimpse(letE)
+@
+
+Note: \code{UTF-16} allows us to read a wide range of characters, such as used in text not coded in Latin-script alphabets, and also Greek, Cyrillic, Coptic, Armenian, Hebrew, Arabic, Syriac (roughly equivalent to Aramaic), Thaana (Maldives), and N'Ko (Manding languages). We need it here, because the data were collected in a Dutch-language setting.
+
+\subsubsection{Tidy}
+
+<<tidyLetExp>>=
+eTask <- as_tibble(letE) %>%
+  replace_na(list(Word.RESP = 0, Word.CRESP = 0))
+eTask <- eTask %>%
+  mutate(
+    taskDifficulty = as_factor(
+      case_when(
+        ExperimentName == 'LetterETaskt_150_3_hard_NL' ~ 'Hard',
+        ExperimentName == 'LetterETaskt_150_3_easy_NL' ~ 'Easy'
+      )
+    ),
+    goNoGo = as_factor(
+      case_when(
+        taskDifficulty == 'Easy' & TrialType %in% c(2, 3) ~ 'Go',
+        taskDifficulty == 'Hard' & TrialType %in% c(3) ~ 'Go',
+        taskDifficulty == 'Easy' & TrialType %in% c(1) ~ 'NoGo',
+        taskDifficulty == 'Hard' & TrialType %in% c(1, 2) ~ 'NoGo'
+      )
+    ),
+    displayType = as_factor(
+      case_when(
+        TrialTypeC == 'Lonely' ~ 'NoFlankers',
+        TrialTypeC == 'Companioned' ~ 'Flankers',
+        TrialTypeC == 'Lonely' ~ 'NoE'
+      )
+    ),
+    sigDet = as_factor(
+      case_when(
+        Word.RESP == 1 & Word.CRESP == 1 ~ 'Hit',
+        Word.RESP == 0 & Word.CRESP == 1 ~ 'Miss',
+        Word.RESP == 1 & Word.CRESP == 0 ~ 'FA',
+        Word.RESP == 0 & Word.CRESP == 0 ~ 'CR'
+      )
+    ),
+    signalNoise = as_factor(
+      case_when(
+        Word.CRESP == 1 ~ 'Signal',
+        Word.CRESP == 0 ~ 'Noise'
+      )
+    ), 
+    subject = as_factor(Subject),
+    reactionTime = Word.RT,
+    trialNumber = TrialNum
+  ) %>%
+  select(
+    c(
+      taskDifficulty,
+      subject,
+      goNoGo,
+      displayType,
+      sigDet,
+      signalNoise,
+      reactionTime
+    )
+  )
+glimpse(eTask)
+@
+
+\subsection{MSIT task}
+
+\subsubsection{Read in}
+
+<<getMSITExp>>=
+msit <-
+  read.delim(file = '~/Dropbox/StatsBook/Book5/EgoDepletion/MSIT200_EData.txt',
+             fileEncoding = 'UTF-16')
+glimpse(msit)
+@
+
+\subsubsection{Tidy}
+
+<<tidyMSITExp>>=
+mTask <- as_tibble(msit) %>%
+  transmute(
+    response = Digits.RESP,
+    stimulus = Digits.CRESP,
+    sigDet = as_factor(
+      case_when(
+        stimulus == response ~ 'Hit',
+        abs(stimulus - response) == 1 ~ 'FA1',
+        abs(stimulus - response) == 2 ~ 'FA2'
+      )
+    ),
+      reactionTime = Digits.RT,
+      subject = factor(Subject),
+      trialType = as_factor(
+        case_when(TrialTypeC == 'C' ~ 'Congruent',
+                  TrialTypeC == 'I' ~ 'Incongruent')
+      )
+    )
+glimpse(mTask)
+@
+
+\subsection{Subject info and ratings}
+
+\subsubsection{Read in}
+
+<<readSubs>>=
+subs <- read_csv(file = '~/Dropbox/StatsBook/Book5/EgoDepletion/SubjectStatus.csv')
+glimpse(subs)
+@
+
+\subsubsection{Tidy}
+
+<<tidySubs>>=
+subjectInfo <- subs %>%
+  select(-c(langother, condition)) %>%
+  rename(
+    subject = SubjectID,
+    effortRating = effort,
+    difficultyRating = difficult,
+    fatigueRating = tired,
+    firstLanguage = lang,
+    frustrationRating = frustrated
+  ) %>%
+  mutate(
+    subject = factor(subject),
+    taskDifficulty = factor(
+      case_when(
+        Task == 'E' ~ 'Easy',
+        Task == 'H' ~ 'Hard'
+      )
+    ),
+    gender = factor(
+      case_when(
+        gender == 1 ~ 'Male',
+        gender == 2 ~ 'Female'
+      )
+    ),
+  ) %>%
+  select(
+    c(
+      taskDifficulty,
+      gender,
+      subject,
+      effortRating,
+      difficultyRating,
+      frustrationRating,
+      fatigueRating
+    )
+  )
+glimpse(subjectInfo)
+@
+
+\pagebreak
+
+\section{Preliminary description}
+
+\secttoc
+
+\subsection{\code{eTask} data}
+
+\subsubsection{Disregarding subjects}
+
+\paragraph{RT}
+
+\subparagraph{Transform RT?}
+
+Now we would like to get a sense of the mean RTs in these conditions. This cannot be done reasonably unless we assume that these are distributed symmetrically (and preferably normally). But the distribution of RTs is meaningful \emph{only relative to a model.} So we model these data with a linear model. (By doing so, we are --- incorrectly --- treating the data as if they came from one subject.)
+
+<<lm.eTask>>=
+eTaskH.FA <- eTask %>%
+  filter(sigDet != 'CR')
+lmETaskH.FA <- lm(reactionTime ~ taskDifficulty * sigDet, data = eTaskH.FA)
+@
+
+\noindent Rather than examining the distribution of the residuals from \code{lmETaskHit}, we look for the value of $\lambda$ (the power of the transformation) that will maximize the MLE of the model.
+
+<<lm.eTask.boxcox.calc, warning = FALSE>>=
+library(car)
+summary(powerTransform(lmETaskH.FA))
+@
+
+\noindent So, should we transform \code{reactionTime}? Yes. Since $\lambda = \Sexpr{round(unname(powerTransform(lmETaskH.FA)$lambda), 2)} \approx 0$, and in the ladder of powers $\lambda = 0$ means $y \rightarrow \log{y}$. We can also show this graphically (\Cref{fig:eTaskBoxCox}):
+
+<<lm.eTask.boxcox, eval = FALSE>>=
+library(lindia)
+gg_boxcox(lmETaskH.FA)
+@
+
+\begin{figure}
+<<lm.eTaskHit.boxcox.show, echo = FALSE, warning = FALSE>>=
+gg_boxcox(lmETaskH.FA, showlambda = FALSE) + ggtitle('')  + xlim(-1.5, 0.5)
+@
+\caption{Plot profile log-likelihoods for the parameter of the Box-Cox power family for \code{lmETaskHit}.}\label{fig:eTaskBoxCox}
+\end{figure}
+
+So we transform \code{reactionTime}, and rerun the \code{lm()}:
+
+<<lm.eTaskHit.log>>=
+eTaskH.FA <- eTaskH.FA %>%
+  mutate(reactionTimeLog = log(reactionTime))
+lmeTaskH.FA.Log <- update(object = lmETaskH.FA, formula. = reactionTimeLog ~ .)
+@
+
+\noindent (Note that we use \code{update()}.)
+
+<<lm.eTaskHit.log.AIC>>=
+AIC(lmETaskH.FA, lmeTaskH.FA.Log) %>%
+  as_tibble %>%
+  kable(digits = 0, booktabs = TRUE) %>%
+  kable_styling(position = 'center')
+@
+
+\noindent We made a point \emph{not} to look at the linear models before determining the difference in AIC, and finding that \code{lmeTaskHitLog} is overwhelmingly better  than \code{lmETaskHit}. We do not have to do this again when we run LME models on these data. (Nevertheless, it's always prudent to double-check by using \code{powerTransform()} on our final model, and confirming that $\lambda \approx 1$, which means that the fit of the model cannot be improved by transforming the response variable.)
+
+Summarize Detection \& RT
+
+<<eTaskRT>>=
+eTaskSum <- eTask %>%
+  group_by(taskDifficulty, signalNoise, sigDet) %>%
+  mutate(reactionTimeLog = log(reactionTime)) %>%
+  summarize(meanRTlog = mean(reactionTimeLog), n = n()) %>%
+  mutate(prop = n / sum(n), geomMean.eTask.RT = exp(meanRTlog)) %>%
+  filter(sigDet != 'CR') %>%
+  select(-c(n, meanRTlog)) %>%
+  select(taskDifficulty, sigDet, prop, geomMean.eTask.RT)
+eTaskSum %>%
+  kable(digits = c(0, 0, 0, 3, 0), booktabs = TRUE) %>%
+  kable_styling(position = 'center')
+@
+
+\noindent Clearly none of the subjects made errors when they responded to a word that contained \code{e}, but made more than twice as many inhibition errors in the \code{Hard} condition (\Sexpr{round(100 * eTaskSum$prop[4], 1)}\%) than in the \code{Easy} condition (\Sexpr{round(100 * eTaskSum$prop[2], 1)}\%).
+
+Now we do this by subject:
+
+<<eTaskRTbySub>>=
+eTaskBySub <- eTask %>%
+  group_by(taskDifficulty, subject, signalNoise, sigDet) %>%
+  mutate(reactionTimeLog = log(reactionTime)) %>%
+  summarize(meanRTlog = mean(reactionTimeLog), n = n()) %>%
+  mutate(prop = n / sum(n), geomMean.eTask.RT = exp(meanRTlog)) %>%
+  filter(sigDet != 'CR') %>%
+  select(-c(n, meanRTlog)) %>%
+  select(taskDifficulty, subject, sigDet, prop, geomMean.eTask.RT)
+glimpse(eTaskBySub)
+@
+
+\subsubsection{Join tibbles}
+
+Now let's join  the \code{eTaskBySub}, and \code{subjectInfo} tibbles by a common column, \code{subject}. We do this using the function \code{full\_join()}
+
+<<fullJoin1>>=
+eTaskSub <- subjectInfo %>%
+  full_join(eTaskBySub)
+dim(eTaskSub)
+eTaskSub <- eTaskSub %>%
+  drop_na()
+dim(eTaskSub)
+glimpse(eTaskSub)
+@
+
+\subsubsection{A quick look at the \code{e} task data}
+
+\paragraph{Effect of task difficulty on ratings} (\Cref{fig:eTaskTaring.Violin})
+
+<<gg_subjectRating, eval = FALSE>>=
+eTaskSub <- eTaskSub %>%
+  mutate(rating = effortRating + difficultyRating + frustrationRating)
+ggplot(data = eTaskSub, aes(x = taskDifficulty,
+                            y = rating,
+                            group = taskDifficulty)) +
+  geom_violin(draw_quantiles = c(0.25, 0.5, 0.75)) +
+  labs(x = 'task difficulty', y = 'composite rating')
+@
+
+\begin{figure}
+<<gg_subjectRating-show, echo = FALSE>>=
+eTaskSub <- eTaskSub %>%
+  mutate(rating = effortRating + difficultyRating + frustrationRating)
+ggplot(data = eTaskSub, aes(x = taskDifficulty,
+                            y = rating,
+                            group = taskDifficulty)) +
+  geom_violin(draw_quantiles = c(0.25, 0.5, 0.75)) +
+  labs(x = 'task difficulty', y = 'composite rating')
+@
+\caption{Violin plots of the effort + difficulty + frustration ratings, as a function of task difficulty.}\label{fig:eTaskTaring.Violin}
+\end{figure}
+
+\paragraph{Effect of task difficulty on false-alarm rate} (\Cref{fig:eTaskFA.Violin})
+
+<<gg_subjectProp, eval = FALSE>>=
+eTaskSubFA <- eTaskSub %>%
+  filter(sigDet == 'FA')
+ggplot(data = eTaskSubFA,
+       aes(x = taskDifficulty,
+           y = prop,
+           group = taskDifficulty)) +
+  geom_violin(draw_quantiles = c(0.25, 0.5, 0.75)) +
+  labs(x = 'task difficulty', y = 'false-alarm rate')
+@
+
+\begin{figure}
+<<gg_subjectProp-show, echo = FALSE>>=
+eTaskSubFA <- eTaskSub %>%
+  filter(sigDet == 'FA')
+ggplot(data = eTaskSubFA,
+       aes(x = taskDifficulty,
+           y = prop,
+           group = taskDifficulty)) +
+  geom_violin(draw_quantiles = c(0.25, 0.5, 0.75)) +
+  labs(x = 'task difficulty', y = 'false-alarm rate')
+@
+\caption{Violin plots of the false-alarm rate, as a function of task difficulty.}\label{fig:eTaskFA.Violin}
+\end{figure}
+
+\paragraph{Effect of task difficulty on RT} (\Cref{fig:eTaskRT.Violin})
+
+<<gg_subjectRT, eval = FALSE>>=
+ggplot(data = eTaskSub,
+       aes(x = taskDifficulty,
+           y = geomMean.eTask.RT,
+           color = sigDet)) +
+  geom_violin(draw_quantiles = c(0.25, 0.5, 0.75)) +
+  labs(x = 'task difficulty', y = 'RT (geometric mean)') +
+  theme(
+    legend.position = c(0.05, 0.95),
+    legend.justification = c(0.05, 0.95)
+  )
+@
+
+\begin{figure}
+<<gg_subjectRT-show, echo = FALSE>>=
+ggplot(data = eTaskSub,
+       aes(x = taskDifficulty,
+           y = geomMean.eTask.RT,
+           color = sigDet)) +
+  geom_violin(draw_quantiles = c(0.25, 0.5, 0.75)) +
+  labs(x = 'task difficulty', y = 'RT (geometric mean)') +
+  theme(
+    legend.position = c(0.05, 0.95),
+    legend.justification = c(0.05, 0.95)
+  )
+@
+\caption{Violin plots of geometric mean RT, as a function of task difficulty and signal detection.}\label{fig:eTaskRT.Violin}
+\end{figure}
+
+\subsection{MSIT task data}
+
+\subsubsection{Disregarding subjects}
+
+\paragraph{RT} Transform RT?
+
+<<lm.mTask>>=
+lmMTask <- lm(reactionTime ~ sigDet * trialType, data = mTask)
+@
+
+<<lm.mTask.boxcox.calc, warning = FALSE>>=
+lambda.mTask <- powerTransform(lmMTask) %>%
+  print()
+@
+
+\noindent We should transform \code{reactionTime} because $\lambda = \Sexpr{round(unname(lambda.mTask$lambda), 2)} \approx 0$. We also show this graphically in \Cref{fig:mTaskBoxCox}:
+
+<<lm.mTask.boxcox, eval = FALSE>>=
+gg_boxcox(lmMTask)
+@
+
+\begin{figure}
+<<lm.mTask.boxcox.show, echo = FALSE, warning = FALSE>>=
+gg_boxcox(lmMTask, showlambda = FALSE) + ggtitle('')  + xlim(-1.5, 0.5)
+@
+\caption{Plot profile log-likelihoods for the parameter of the Box-Cox power family for \code{lmMTask}.}\label{fig:mTaskBoxCox}
+\end{figure}
+
+Transform RT, and compare models.
+
+<<lm.mTask.log>>=
+mTask <- mTask %>%
+  mutate(reactionTimeLog = log(reactionTime))
+lmMTaskLog <- lm(reactionTimeLog ~ sigDet * trialType, data = mTask)
+AIC(lmMTask, lmMTaskLog) %>%
+  as_tibble %>%
+  kable(digits = 0, booktabs = TRUE) %>%
+  kable_styling(position = 'center')
+@
+
+Here too, there is no doubt that taking the log is the right thing to do.
+
+\paragraph{Measures of accuracy}
+
+Measures of association for ordinal factors (\code{stimulus}, \code{response}) in a two-way table:
+
+<<MSIT.accuracy>>= 
+mTaskTab <- with(mTask, table(response, stimulus))
+library(questionr)
+cv <- cramer.v(mTaskTab)
+library(DescTools)
+gkg <- GoodmanKruskalGamma(mTaskTab)
+gkt <- GoodmanKruskalTau(mTaskTab)
+l <- Lambda(mTaskTab)
+tribble(
+  ~measure,				~value,
+  'Cramer\'s V',				cv,
+  'Goodman-Kruskal Gamma', 	gkg,
+  'Goodman-Kruskal Tau',		gkt,
+  'Lambda',				l) %>%
+  kable(digits = 2, booktabs = TRUE) %>%
+  kable_styling(position = 'center')
+@
+
+\noindent These measures represent how well the subjects responded to each stimulus with the corresponding correct response.
+
+Using \emph{Lambda} (as an example) we summarize accuracy as a function of trial type and signal detection category:
+
+<<mTaskAccuracy>>=
+library(questionr)
+mTaskC <- mTask %>%
+  filter(trialType == 'Congruent') %>%
+  select(stimulus, response) %>%
+  table() %>%
+  cramer.v() %>%
+  print()
+mTaskI <- mTask %>%
+  filter(trialType == 'Incongruent') %>%
+  select(stimulus, response) %>%
+  table() %>%
+  cramer.v() %>%
+  print()
+@
+<<mTaskAccuracyByS, warning = FALSE>>=
+mTaskCramerS <- mTask %>%
+  group_by(trialType, subject) %>%
+  nest %>%
+  mutate(cv = map(data, ~
+                    select(.x, c(stimulus, response)) %>%
+                    table %>%
+                    cramer.v %>%
+                    as.list %>%
+                    as_tibble(.name_repair = ~ c('Cramer_V'))
+                  )) %>%
+  select(-data) %>%
+  unnest(cv) %>%
+  ungroup
+glimpse(mTaskCramerS)
+@
+
+\paragraph{Effect of trial type on accuracy} (\Cref{fig:mTaskCramerS})
+  
+<<gg_mTaskCramerS, eval = FALSE>>=
+mTaskCramerS <- mTaskCramerS %>%
+  spread(key = trialType, value = Cramer_V) %>%
+  mutate(diff = Congruent - Incongruent)
+mTaskDiff <- tibble(bySubject = mTaskCramerS$diff)  
+ggplot(data = mTaskDiff, aes(x = '',
+                            y = bySubject)) +
+  geom_violin(draw_quantiles = c(0.25, 0.5, 0.75)) +
+  labs(x = '', y = 'difference in Cramer\'s V')
+@
+
+\begin{figure}
+<<gg_mTaskCramerS-show, echo = FALSE>>=
+mTaskCramerS <- mTaskCramerS %>%
+  spread(key = trialType, value = Cramer_V) %>%
+  mutate(diff = Congruent - Incongruent)
+mTaskDiff <- tibble(bySubject = mTaskCramerS$diff)  
+ggplot(data = mTaskDiff, aes(x = '',
+                            y = bySubject)) +
+  geom_violin(draw_quantiles = c(0.25, 0.5, 0.75)) +
+  labs(x = '', y = 'difference in Cramer\'s V')
+@
+\caption{Violin plots of the difference between Cramer's V for congruent and incongruent trials.}\label{fig:mTaskCramerS}
+\end{figure}
+
+\noindent The median difference between Cramer's V for congruent and incongruent trials is \Sexpr{round(median(mTaskCramerS$diff), 2)}.
+
+\subsubsection{Join tibbles}
+
+<<fullJoin2>>=
+eTaskmTaskSub <- eTaskSub %>%
+  full_join(mTaskCramerS)
+dim(eTaskmTaskSub)
+eTaskSub <- eTaskSub %>%
+  drop_na()
+dim(eTaskmTaskSub)
+glimpse(eTaskmTaskSub)
+eTaskmTaskSubT <- eTaskmTaskSub %>%
+  gather(congruence, CramerV, Congruent:Incongruent, factor_key = TRUE)
+glimpse(eTaskmTaskSubT)
+eTaskmTaskSubT %>%
+  count(taskDifficulty) %>%
+  mutate(prop = prop.table(n))  %>%
+  mkable
+eTaskmTaskSubT <- eTaskmTaskSubT %>%
+  drop_na()
+eTaskmTaskSubT %>%
+  count(taskDifficulty) %>%
+  mutate(prop = prop.table(n))  %>%
+  mkable
+@
+
+<<gg_eTaskmTaskSub, eval = FALSE>>=
+ggplot(data = eTaskmTaskSubT, aes(x = taskDifficulty, 
+                            y = CramerV, color = congruence)) +
+  geom_boxplot() +
+  labs(x = 'task difficulty', y = 'Cramer\'s V')
+@
+
+\begin{figure}
+<<gg_eTaskmTaskSub-show, echo = FALSE, fig.dim = c(4.5, 3), out.width = '0.75\\linewidth'>>=
+ggplot(data = eTaskmTaskSubT, aes(x = taskDifficulty, 
+                            y = CramerV, color = congruence)) +
+  geom_boxplot() +
+  labs(x = 'task difficulty', y = 'Cramer\'s V')
+@
+\caption{Boxplots of Cramer's V as a function of \code{e} task difficulty and congruence in the MSIT task.}\label{fig:eTaskmTaskSub}
+\end{figure}
+
+<<gg_eTaskRatingmTaskCong, eval = FALSE>>=
+ggplot(data = eTaskmTaskSubT, aes(x = rating, 
+                            y = CramerV, color = congruence)) +
+  geom_point() +
+  labs(x = 'rating', y = 'Cramer\'s V')
+@
+
+\begin{figure}
+<<gg_eTaskRatingmTaskCong-show, echo = FALSE, fig.dim = c(4.5, 3), out.width = '0.75\\linewidth'>>=
+ggplot(data = eTaskmTaskSubT, aes(x = rating, 
+                            y = CramerV, color = congruence)) +
+  geom_point() +
+  geom_smooth() +
+  labs(x = 'rating', y = 'Cramer\'s V')
+@
+\caption{Cramer's V as a function of \code{e} rating and congruence in the MSIT task.}\label{fig:eTaskmTaskSub}
+\end{figure}
+
+<<mTaskFullJoin>>=
+all <- eTaskmTaskSub %>%
+  full_join(mTask)
+dim(all)
+all <- all %>%
+  drop_na()
+dim(all)
+glimpse(all)
+@
+
+<<gg.all, eval = FALSE>>=
+ggplot(data = all, aes(x = taskDifficulty, 
+                            y = reactionTimeLog, color = trialType)) +
+  geom_violin() +
+  labs(x = 'e task difficult', y = 'm task log(RT)')
+@
+
+\begin{figure}
+<<gg.all-show, echo = FALSE, fig.dim = c(4.5, 3), out.width = '0.75\\linewidth'>>=
+ggplot(data = all, aes(x = taskDifficulty, 
+                            y = reactionTimeLog, color = trialType)) +
+  geom_violin() +
+  labs(x = 'e task difficult', y = 'm task log(RT)')
+@
+\caption{Log(RT) as a function of \code{e} task difficulty and congruence in the MSIT task.}\label{fig:eTaskmTaskSub}
+\end{figure}
+
+
+\subsection{Linear mixed-effects model}
+
+<<lme.mTask.log>>=
+lmeMTaskLog <-
+  lmer(reactionTimeLog ~ sigDet * trialType +
+                                                  (1 | subject), data = mTask)
+@
+
+More complex random effects
+
+<<lme.mTask.log.2>>=
+lmeMTaskLog2 <-
+  lmer(reactionTimeLog ~ sigDet * trialType +
+                                                 (sigDet * trialType | subject),
+       data = mTask)
+AIC(lmeMTaskLog, lmeMTaskLog2) %>%
+  as_tibble %>%
+  kable(digits = 0, booktabs = TRUE) %>%
+  kable_styling(position = 'center')
+@
+
+<<tidy.re.lme.mTask.log.2>>=
+tidy(lmeMTaskLog2, effects = 'ran_pars')  %>%
+  mkables
+@
+
+<<lme.mTask.log.2.plot, eval = FALSE>>=
+library(brms)
+library(dotwhisker)
+tidy(lmeMTaskLog2, effects = 'fixed') %>%
+  dwplot(vline = geom_vline(
+    xintercept = 0,
+    colour = 'grey50',
+    linetype = 2
+  ))
+@
+
+\begin{figure}
+<<lme.mTask.log.2.plot.show, echo = FALSE, out.width = '\\linewidth', fig.dim = c(5, 5)>>=
+tidy(lmeMTaskLog2, effects = 'fixed') %>%
+  dwplot(vline = geom_vline(
+    xintercept = 0,
+    colour = 'grey50',
+    linetype = 2
+  ))
+@
+\caption{Dot-and-whisker plot of fixed effects of \code{lmeMTaskLog2} model .}\label{fig:lmeMTaskLog2plot}
+\end{figure}
+\pagebreak
+\section*{R session information}
+
+<<session-info, cache=FALSE>>=
+sessionInfo()
+Sys.time()
+@
+
+
+
+\end{document}
