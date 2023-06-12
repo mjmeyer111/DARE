@@ -1,0 +1,149 @@
+# multivariate analysis of linear change btw two groups
+
+C1=matrix(c(-1,1,0,0,0,
+           0,-1,1,0,0,
+           0,0,-1,1,0,
+           0,0,0,-1,1),nrow=4,byrow=TRUE)
+S=diag(5)
+
+C1=matrix(c(-1,1,0,0,
+           0,-1,1,0,
+           0,0,-1,1),nrow=3,byrow=TRUE)
+
+S=matrix(
+c(5.4154545,	2.7168182,	3.9102273,	2.7102273,
+  2.7168182,	4.1847727,	2.9271591,	3.3171591,
+  3.9102273,	2.9271591,	6.4557386,	4.1307386,
+  2.7102273,	3.3171591,	4.1307386,	4.9857386),
+nrow=4,byrow=TRUE)
+
+#approximate correlation matrix of compound symmetry
+
+#sd=2.3 ; r=0.6
+
+#D=diag(rep(sd,4))
+#R=matrix( c(1, r, r, r, 
+#           r, 1, r, r,
+#           r, r, 1, r,
+#           r, r, r, 1), nrow=4,byrow=TRUE)
+
+#S=D%*%R%*%D
+
+CSC=C1%*%S%*%t(C1)
+
+p4maovl=function(n1=16,n2=11,beta_d=.70,CSC){
+a=.05
+p=nrow(CSC)+1
+
+j=matrix(rep(1,p-1),nrow=p-1)
+lambda=n1*n2/(n1+n2)*beta_d^2*(t(j)%*%solve(CSC)%*%j)
+
+cat(lambda)
+
+f0=qf(1-a,p-1,n1+n2-p)
+1-pf(f0,p-1,n1+n2-p,lambda)
+}
+
+p4maovl(,,,CSC)
+
+# multivariate analysis of quadratic change in one group
+
+C1=matrix(c(-1,1,0,0,
+           0,-1,1,0,
+           0,0,-1,1),
+          nrow=3,byrow=TRUE)
+C2=matrix(c(-1,1,0,
+             0,-1,1),
+          nrow=2,byrow=TRUE)
+
+C=C2%*%C1
+
+E=matrix(c(1289.664, 1205.548, 1027.072, 1044.246,
+           1205.548, 1247.069333, 1021.377333, 1004.818667,
+	   1027.072, 1021.377333, 1006.469333, 890.2846667,
+	   1044.246, 1004.818667, 890.2846667, 1056.217333),
+        nrow=4,byrow=TRUE)
+
+S=E/(15-1)
+
+#approximate correlation matrix of compound symmetry 
+
+#sd=9; r=0.9
+
+#D=diag(rep(sd,4))
+#R=matrix( c(1, r, r, r, 
+#            r, 1, r, r,
+#            r, r, 1, r,
+#            r, r, r, 1), nrow=4,byrow=TRUE)
+
+#S=D%*%R%*%D
+
+CSC=C%*%S%*%t(C)
+
+p4maovq=function(n=9,beta2=-1.96,CSC){
+a=.05
+p=nrow(CSC)+2
+
+j=matrix(rep(1,p-2),nrow=p-2)
+lambda=4*n*beta2^2*(t(j)%*%solve(CSC)%*%j)
+
+f0=qf(1-a,p-2,n-p+2)
+1-pf(f0,p-2,n-p+2,lambda)
+}
+
+p4maovq(,,CSC)
+
+#orthogonal coding in Raudenbush and Liu 2001
+#t0;z1;z2;z3
+
+m=4
+t0=rep(1,m+1)
+t1=0:m
+t2=t1^2/2
+t3=t1^3/6
+
+z1=t1-t(t1)%*%t0/sum(t0^2)*t0
+z2=t2-t(t2)%*%t0/sum(t0^2)*t0-t(t2)%*%z1/sum(z1^2)*z1
+z3=t3-t(t3)%*%t0/sum(t0^2)*t0-t(t3)%*%z1/sum(z1^2)*z1-t(t3)%*%z2/sum(z2^2)*z2
+
+# HLM random coefficients: linear change
+# two group 
+
+p4hlm2l=function(n=112,m=3,beta11=.187,sigma2=.42,p1=.04/.42){
+a=.05
+tau1=sigma2*p1
+
+t0=rep(1,m+1)
+t1=0:m
+z1=t1-t(t1)%*%t0/sum(t0^2)*t0
+
+lambda=sqrt(n/4)*beta11/sqrt(tau1+sigma2/sum(z1^2))
+t0=qt(1-a/2,n-2)
+1-pt(t0,n-2,lambda)+pt(-t0,n-2,lambda)
+}
+
+p4hlm2l()
+
+# HLM random coefficients: quadratic change
+# one group
+# http://www.cdc.gov/growthcharts/data/set1/chart06.pdf
+# Perrin et al, BJ Psychiatry
+# p2=tau2/sigma^2
+
+p4hlm2q=function(n=14,m=6,beta20=-.707,sigma=3.75,p2=(.24/3.75)^2){
+a=.05
+tau2=sigma^2*p2
+
+t0=rep(1,m+1)
+t1=0:m
+t2=t1^2/2
+z1=t1-t(t1)%*%t0/sum(t0^2)*t0
+z2=t2-t(t2)%*%t0/sum(t0^2)*t0-t(t2)%*%z1/sum(z1^2)*z1
+
+lambda=sqrt(n)*beta20/sqrt(tau2+sigma^2/sum(z2^2))
+t0=qt(1-a/2,n-1)
+1-pt(t0,n-1,lambda)+pt(-t0,n-1,lambda)
+}
+
+p4hlm2q()
+

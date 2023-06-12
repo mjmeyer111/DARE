@@ -1,0 +1,3 @@
+eData	%>%	~	as_factor	as_tibble	c	case_when	difficulty	displayType	glimpse	goNoGo	kable	list	mutate	reactionTime	read.delim	replace_na	select	sigDet	subject	Subject	TrialNum	Word.RT
+getMSITExp	%>%	~	as_factor	as_tibble	c	case_when	Digits.RESP	Digits.RT	factor	glimpse	kable	read.delim	select	Subject	transmute
+getSubs	%>%	~	age	c	case_when	condition	difficult	difficultyRating	effort	effortRating	factor	fatigueRating	firstLanguage	frustrated	frustrationRating	gender	glimpse	lang	langother	mutate	read_csv	rename	select	subject	SubjectID	taskDifficulty	tired

@@ -1,0 +1,29 @@
+#fixed effects meta-analysis
+
+p4fma=function(I=11,ne=50,nc=50,es=.17){
+a=.05
+vi=(ne+nc)/(ne*nc) + .5*es^2/(ne+nc)
+
+lambda=sqrt(I)*es/sqrt(vi)
+1-pnorm(qnorm(1-a/2)-lambda)+pnorm(qnorm(a/2)-lambda)
+
+#lambda_=sqrt(I)*es/sqrt((ne+nc)/(ne*nc))
+#p_=1-pnorm(qnorm(1-a/2)-lambda_)+pnorm(qnorm(a/2)-lambda_)
+#cat(lambda, "\t", lambda_, "\t", p_)
+}
+
+p4fma()
+
+#random effects meta-analysis
+
+p4rma=function(I=22,ne=25,nc=25,es=.2,p=1/3){
+a=.05
+vi=(ne+nc)/(ne*nc) + .5*es^2/(ne+nc)
+
+lambda=sqrt(I)*es/sqrt(vi)/sqrt(1+p)
+#cat(lambda)
+
+1-pnorm(qnorm(1-a/2)-lambda)+pnorm(qnorm(a/2)-lambda)
+}
+
+p4rma()

@@ -1,0 +1,55 @@
+getLetExp	eTask	letE
+getMSITExp	msit
+getSubs	subjectInfo	subs
+lm.eTaskHit	eTaskHit	lmETaskHit
+lm.eTaskHit.boxcox	
+lm.eTaskHit.boxcox.show	
+lmETaskHit.boxcox.calc	
+lm.eTaskHit.log	eTaskH.FA	lmeTaskH.FA.Log
+gg_subjectRating	
+gg_subjectRating-show	eTaskSub
+lm.mTask	lmMTask
+lm.mTask.boxcox	
+lm.mTask.boxcox.show	
+lm.mTask.boxcox.calc	lambda.mTask
+lm.mTask.log	lmMTaskLog	mTask
+lme.mTask.log	lmeMTaskLog
+lme.mTask.log.2	lmeMTaskLog2
+tidy.re.lme.mTask.log.2	
+lme.mTask.log.2.plot	
+lme.mTask.log.2.plot.show	
+clean-up	
+lm.eTaskHit.log.AIC	
+fullJoin	eTaskSub
+eTaskHit.FA	eTaskSum
+tabyl.eTask	
+lm.eTask	eTaskH.FA	lmETaskH.FA
+lm.eTask.boxcox.calc	
+lm.eTask.boxcox	
+tidyMSITExp	mTask
+readSubs	subs
+tidySubs	subjectInfo
+readLetExp	letE
+tidyLetExp	eTask
+eTaskRT	eTaskSum
+eTaskRTbySub	eTaskBySub
+gg_subjectProp	
+gg_subjectProp-show	eTaskSubFA
+gg_subjectRT	
+gg_subjectRT-show	
+MSIT.accuracy	cv	gkg	gkt	l	mTaskTab
+mTaskAccuracy	mTaskC	mTaskI
+mTaskAccuracyByS	mTaskCramerS
+gg_mTaskCramerS	
+gg_mTaskCramerS-show	mTaskCramerS	mTaskDiff
+eTaskRTkable	
+fullJoin1	eTaskSub
+fullJoin2	eTaskSub	eTaskmTaskSub	eTaskmTaskSubT
+gg_eTaskmTaskSub	
+gg_eTaskmTaskSub-show	
+redefineKable	mkable	mkables
+gg_eTaskRatingmTaskCong	
+gg_eTaskRatingmTaskCong-show	
+mTaskFullJoin	all
+gg.all	
+gg.all-show	

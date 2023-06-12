@@ -1,0 +1,9 @@
+[0] Config.pm:304> INFO - This is Biber 2.13
+[0] Config.pm:307> INFO - Logfile is 'egoDepletion.blg'
+[45] biber-darwin:315> INFO - === Fri Dec 13, 2019, 20:43:46
+[67] Biber.pm:375> INFO - Reading 'egoDepletion.bcf'
+[201] Biber.pm:905> INFO - Found 0 citekeys in bib section 0
+[215] Utils.pm:300> WARN - The file 'egoDepletion.bcf' does not contain any citations!
+[228] bbl.pm:648> INFO - Writing 'egoDepletion.bbl' with encoding 'UTF-8'
+[228] bbl.pm:751> INFO - Output to egoDepletion.bbl
+[228] Biber.pm:110> INFO - WARNINGS: 1

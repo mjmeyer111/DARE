@@ -1,0 +1,42 @@
+# power of confidence interval
+pi<-function(n=30,U=1,s=2){a=.05
+   t0=qt(1-a/2,2*n-2)
+   pchisq(.5*n*(2*n-2)*U^2/(t0*s)^2,2*n-2) }
+
+pi(37)
+
+pi1<-function(n=30,U=1,s=2){ a=.05
+  t0=qt(1-a/2,2*n-2)
+  integrate(function(x){ (2*pnorm(t0*sqrt(x/(2*n-2)))-1)*dchisq(x,2*n-2)
+      }, 0,.5*n*(2*n-2)*U^2/(t0*s)^2 )$val/(1-a)}
+
+pi1(37)
+
+
+#calcute omega
+
+# d=Delta/sigma
+# ud=U/sigma
+
+omega<-function(n,d=.5,ud=.35){
+   v=2*n-2
+   lambda=sqrt(n/2)*d
+   a=.05
+   t0=qt(1-a/2,v)
+
+   upper=(ud*sqrt(n*v/2)/t0)^2 
+   pwr1=integrate(function(x1){ (1-pnorm(t0*sqrt(x1/v) -lambda))*dchisq(x1,v)
+                 }, 0, upper )$val
+   pwr2=integrate(function(x2){ pnorm(-t0*sqrt(x2/v) -lambda)*dchisq(x2,v)
+                 }, 0, upper )$val
+   pwr=pwr1+pwr2
+
+ power=pt(-t0,v,lambda)+1-pt(t0,v,lambda)
+
+return(pwr/power)
+}
+
+omega(70)
+>[1] 0.8038647
+
+
