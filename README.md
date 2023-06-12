@@ -1,1 +1,1 @@
-# DARE_beta
+# DARE
