@@ -39,7 +39,6 @@
 #' @importFrom vcd goodfit
 #' @importFrom magrittr pipe
 #' @import tibble
-#' @export
 discDist <- function (
     x,
     type = c("poisson", "binomial", "nbinomial"),
