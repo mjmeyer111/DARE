@@ -1,4 +1,4 @@
-#' Calculate a folded log  with the Tukey and Haldane-Anscombe corrections
+#' Calculate a folded log with the Tukey and Haldane-Anscombe corrections
 #'
 #' @param successes Integer: numerator frequency.
 #' @param failures Integer: denominator frequency.

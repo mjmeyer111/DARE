@@ -1,6 +1,6 @@
 Package: DARE
 Title: What the Package Does (One Line, Title Case)
-Version: 0.0.0.9000
+Version: 0.2023.06.13
 Authors@R: 
     person("Michael", "Kubovy", , "mk9y@virginia.edu", role = c("aut", "cre"),
            comment = c(ORCID = "YOUR-ORCID-ID"))
@@ -13,10 +13,11 @@ License: `use_mit_license()`, `use_gpl3_license()` or friends to pick a
     license
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.2.2
+RoxygenNote: 7.2.3
 Imports:
 	tidyverse,
-	janitor
+	janitor,
+	tibble
 Depends: 
     R (>= 2.10)
 LazyData: true

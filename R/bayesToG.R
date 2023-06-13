@@ -1,6 +1,6 @@
-#' Calculate a folded log  with the Tukey and Haldane-Anscombe corrections
+#' Convert a Bayes Factor to a g-prior
 #'
-#' @param bayesFactor
+#' @param bayesFactor the Bayes factor
 #' @return The g-prior associated with the inputted Bayes factor
 #' @export
 bayesToG <- function(bayesFactor) {

@@ -27,7 +27,7 @@
 #' New York.
 #'
 #' M. Friendly (2000), Visualizing Categorical Data. SAS Institute, Cary, NC.
-#' @example
+#' @examples
 #' set.seed(1111)
 #' rb <- tibble(k = rbinom(10000, 20, 0.8))
 #' ddOut <- discDist(rb$k, type = "binomial", size = 20)

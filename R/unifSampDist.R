@@ -4,8 +4,8 @@
 #'
 #' @param n Number of observations in the sample
 #' @param R Number of samples. An integer that is at least 1.
-#' @param d
-#' @return Dataset
+#' @param d The minimum and maximum limits for the error
+#' @return A dataset
 #' @export
 unifSampDist <- function(n, R, d) {
   1:R %>%
