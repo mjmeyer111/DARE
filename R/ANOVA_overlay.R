@@ -10,13 +10,21 @@
 #' the common, the condition, and the residuals.
 #' @examples
 #'\dontrun{
-#' # using tapply to see the data split by condition, assuming a mean common
-#' tapply(mtcars$wt,mtcars$am,mean)
+#' # using dplyr to see the data split by condition, assuming a mean common
+#' ToothGrowth %>% group_by(supp) %>% summarize(mn = mean(len))
 #'
 #' # using ANOVA_overlay
-#' ANOVA_overlay("wt", "am", mtcars)
-#' ANOVA_overlay("wt", "am", mtcars, common = median)
-#' ANOVA_overlay("wt", "gear", mtcars)
+#' ANOVA_overlay("len", "supp", ToothGrowth)
+#' ANOVA_overlay("len", "supp", ToothGrowth, common = median)
+#' ANOVA_overlay("len", "dose", ToothGrowth)
+#'
+#' # Showing that the sums of the overlays add up to the data
+#'
+#' toothGrowthOverlays <- ANOVA_overlay("len", "supp", ToothGrowth)
+#' SS_data <- sum((toothGrowthOverlays$data)^2)
+#' SS_overlays <- sum((toothGrowthOverlays$common)^2) + sum((toothGrowthOverlays$condition)^2) +
+#'  sum((toothGrowthOverlays$residuals)^2)
+#' all.equal(SS_data,SS_overlays)
 #'}
 #' @export
 ANOVA_overlay <- function(dv, iv, data, common = mean){
@@ -58,13 +66,13 @@ ANOVA_overlay <- function(dv, iv, data, common = mean){
   names(dataCommonOverlay) <- names(data.eff)
 
   # (3) condition
-  dataOverlay <- as.data.frame(matrix(data.mn, nrow = nrow(data.w),
+  dataOverlay <- as.data.frame(matrix(data.eff, nrow = nrow(data.w),
                                       ncol = ncol(data.w),
                                       byrow = TRUE))
-  names(dataOverlay) <- names(data.mn)
+  names(dataOverlay) <- names(data.eff)
 
   # (4) residuals
-  names(dataResid) <- names(data.mn)
+  names(dataResid) <- names(data.eff)
 
   return(list("data"=tibble::tibble(data.w),
          "common"=tibble::tibble(dataCommonOverlay),
