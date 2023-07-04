@@ -3,6 +3,8 @@
 #'
 #' @param dv Character: What is the name of your dependent variable?
 #' @param iv Character: What is the name of your independent variable?
+#' @param formula Formula: A formula in the form dv ~ iv, where dv is your
+#' dependent variable, and iv is your independent variable.
 #' @param data tibble or data frame: Your dataset containing your variables.
 #' @param common function: which function should represent the common in the
 #' splitting algorithm?
@@ -18,6 +20,9 @@
 #' ANOVA_overlay("len", "supp", ToothGrowth, common = median)
 #' ANOVA_overlay("len", "dose", ToothGrowth)
 #'
+#' # using ANOVA_overlay with formula
+#' ANOVA_overlay(len~supp, ToothGrowth)
+#'
 #' # Showing that the sums of the overlays add up to the data
 #'
 #' toothGrowthOverlays <- ANOVA_overlay("len", "supp", ToothGrowth)
@@ -27,7 +32,12 @@
 #' all.equal(SS_data,SS_overlays)
 #'}
 #' @export
-ANOVA_overlay <- function(dv, iv, data, common = mean){
+ANOVA_overlay <- function(dv, iv, data, common, ...){
+  UseMethod('ANOVA_overlay')
+}
+
+#' @export
+ANOVA_overlay.default <- function(dv, iv, data, common = mean){
 
   data <- data[,c(dv, iv)]
 
@@ -78,4 +88,11 @@ ANOVA_overlay <- function(dv, iv, data, common = mean){
          "common"=tibble::tibble(dataCommonOverlay),
          "condition"=tibble::tibble(dataOverlay),
          "residuals"=tibble::tibble(dataResid)))
+}
+
+#' @export
+ANOVA_overlay.formula <- function(formula, data, common = mean){
+  dvFormula <- as.character(formula[[2]])
+  ivFormula <- as.character(formula[[3]])
+  ANOVA_overlay.default(dvFormula, ivFormula, data, common)
 }

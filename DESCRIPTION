@@ -1,6 +1,6 @@
 Package: DARE
 Title: What the Package Does (One Line, Title Case)
-Version: 0.2023.06.19
+Version: 0.2023.07.04
 Authors@R: 
     person("Michael", "Kubovy", , "mk9y@virginia.edu", role = c("aut", "cre"),
            comment = c(ORCID = "YOUR-ORCID-ID"))
