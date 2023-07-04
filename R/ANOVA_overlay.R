@@ -16,28 +16,28 @@
 #' ToothGrowth %>% group_by(supp) %>% summarize(mn = mean(len))
 #'
 #' # using ANOVA_overlay
-#' ANOVA_overlay("len", "supp", ToothGrowth)
-#' ANOVA_overlay("len", "supp", ToothGrowth, common = median)
-#' ANOVA_overlay("len", "dose", ToothGrowth)
+#' ANOVA_overlay(data = ToothGrowth, dv = "len", iv = "supp")
+#' ANOVA_overlay(data = ToothGrowth, dv = "len", iv = "supp", common = median)
+#' ANOVA_overlay(data = ToothGrowth, dv = "len", iv = "dose")
 #'
 #' # using ANOVA_overlay with formula
-#' ANOVA_overlay(len~supp, ToothGrowth)
+#' ANOVA_overlay(data = ToothGrowth, formula = len~supp)
 #'
 #' # Showing that the sums of the overlays add up to the data
 #'
-#' toothGrowthOverlays <- ANOVA_overlay("len", "supp", ToothGrowth)
+#' toothGrowthOverlays <- ANOVA_overlay(data = ToothGrowth, dv = "len", iv = "supp")
 #' SS_data <- sum((toothGrowthOverlays$data)^2)
 #' SS_overlays <- sum((toothGrowthOverlays$common)^2) + sum((toothGrowthOverlays$condition)^2) +
 #'  sum((toothGrowthOverlays$residuals)^2)
 #' all.equal(SS_data,SS_overlays)
 #'}
 #' @export
-ANOVA_overlay <- function(dv, iv, data, common, ...){
+ANOVA_overlay <- function(data, common = mean, ...){
   UseMethod('ANOVA_overlay')
 }
 
 #' @export
-ANOVA_overlay.default <- function(dv, iv, data, common = mean){
+ANOVA_overlay.default <- function(data, dv, iv, common = mean){
 
   data <- data[,c(dv, iv)]
 
@@ -91,7 +91,7 @@ ANOVA_overlay.default <- function(dv, iv, data, common = mean){
 }
 
 #' @export
-ANOVA_overlay.formula <- function(formula, data, common = mean){
+ANOVA_overlay.formula <- function(data, formula, common = mean){
   dvFormula <- as.character(formula[[2]])
   ivFormula <- as.character(formula[[3]])
   ANOVA_overlay.default(dvFormula, ivFormula, data, common)
