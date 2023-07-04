@@ -85,9 +85,9 @@ ANOVA_overlay.default <- function(x, y, data, common = mean){
   names(dataResid) <- names(data.eff)
 
   return(list("data"=tibble::tibble(data.w),
-         "common"=tibble::tibble(dataCommonOverlay),
-         "condition"=tibble::tibble(dataOverlay),
-         "residuals"=tibble::tibble(dataResid)))
+              "common"=tibble::tibble(dataCommonOverlay),
+              "condition"=tibble::tibble(dataOverlay),
+              "residuals"=tibble::tibble(dataResid)))
 }
 
 #' @export
