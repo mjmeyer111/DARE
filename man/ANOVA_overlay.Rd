@@ -5,20 +5,19 @@
 \title{Splitting your data to construct overlays that mimic the four sections of
 data used to calculate a one-way ANOVA.}
 \usage{
-ANOVA_overlay(dv, iv, data, common, ...)
+ANOVA_overlay(x, ...)
 }
 \arguments{
-\item{dv}{Character: What is the name of your dependent variable?}
+\item{x}{Either your independent variable (as a character), or a formula
+in the form dv ~ iv, where dv is your dependent variable, and iv is your
+independent variable.}
 
-\item{iv}{Character: What is the name of your independent variable?}
+\item{y}{Character: What is the name of your dependent variable?}
 
 \item{data}{tibble or data frame: Your dataset containing your variables.}
 
 \item{common}{function: which function should represent the common in the
 splitting algorithm?}
-
-\item{formula}{Formula: A formula in the form dv ~ iv, where dv is your
-dependent variable, and iv is your independent variable.}
 }
 \value{
 a list of four tibbles, representing the four overlays: the data,
@@ -34,16 +33,16 @@ data used to calculate a one-way ANOVA.
 ToothGrowth \%>\% group_by(supp) \%>\% summarize(mn = mean(len))
 
 # using ANOVA_overlay
-ANOVA_overlay("len", "supp", ToothGrowth)
-ANOVA_overlay("len", "supp", ToothGrowth, common = median)
-ANOVA_overlay("len", "dose", ToothGrowth)
+ANOVA_overlay("supp", "len", ToothGrowth)
+ANOVA_overlay("supp", "len", ToothGrowth, common = median)
+ANOVA_overlay("dose", "len", ToothGrowth)
 
 # using ANOVA_overlay with formula
 ANOVA_overlay(len~supp, ToothGrowth)
 
 # Showing that the sums of the overlays add up to the data
 
-toothGrowthOverlays <- ANOVA_overlay("len", "supp", ToothGrowth)
+toothGrowthOverlays <- ANOVA_overlay("supp", "len", ToothGrowth)
 SS_data <- sum((toothGrowthOverlays$data)^2)
 SS_overlays <- sum((toothGrowthOverlays$common)^2) + sum((toothGrowthOverlays$condition)^2) +
  sum((toothGrowthOverlays$residuals)^2)

@@ -1,10 +1,10 @@
 #' Splitting your data to construct overlays that mimic the four sections of
 #' data used to calculate a one-way ANOVA.
 #'
-#' @param dv Character: What is the name of your dependent variable?
-#' @param iv Character: What is the name of your independent variable?
-#' @param formula Formula: A formula in the form dv ~ iv, where dv is your
-#' dependent variable, and iv is your independent variable.
+#' @param x Either your independent variable (as a character), or a formula
+#' in the form dv ~ iv, where dv is your dependent variable, and iv is your
+#' independent variable.
+#' @param y Character: What is the name of your dependent variable?
 #' @param data tibble or data frame: Your dataset containing your variables.
 #' @param common function: which function should represent the common in the
 #' splitting algorithm?
@@ -16,32 +16,32 @@
 #' ToothGrowth %>% group_by(supp) %>% summarize(mn = mean(len))
 #'
 #' # using ANOVA_overlay
-#' ANOVA_overlay("len", "supp", ToothGrowth)
-#' ANOVA_overlay("len", "supp", ToothGrowth, common = median)
-#' ANOVA_overlay("len", "dose", ToothGrowth)
+#' ANOVA_overlay("supp", "len", ToothGrowth)
+#' ANOVA_overlay("supp", "len", ToothGrowth, common = median)
+#' ANOVA_overlay("dose", "len", ToothGrowth)
 #'
 #' # using ANOVA_overlay with formula
 #' ANOVA_overlay(len~supp, ToothGrowth)
 #'
 #' # Showing that the sums of the overlays add up to the data
 #'
-#' toothGrowthOverlays <- ANOVA_overlay("len", "supp", ToothGrowth)
+#' toothGrowthOverlays <- ANOVA_overlay("supp", "len", ToothGrowth)
 #' SS_data <- sum((toothGrowthOverlays$data)^2)
 #' SS_overlays <- sum((toothGrowthOverlays$common)^2) + sum((toothGrowthOverlays$condition)^2) +
 #'  sum((toothGrowthOverlays$residuals)^2)
 #' all.equal(SS_data,SS_overlays)
 #'}
 #' @export
-ANOVA_overlay <- function(dv, iv, data, common, ...){
+ANOVA_overlay <- function(x, ...){
   UseMethod('ANOVA_overlay')
 }
 
 #' @export
-ANOVA_overlay.default <- function(dv, iv, data, common = mean){
+ANOVA_overlay.default <- function(x, y, data, common = mean){
 
-  data <- data[,c(dv, iv)]
+  data <- data[,c(y, x)]
 
-  data.w <- unstack(data, formula(paste0(dv, "~", iv)))
+  data.w <- unstack(data, formula(paste0(y, "~", x)))
 
   maxN_Group <- max(sapply(data.w, length))
 
@@ -91,8 +91,8 @@ ANOVA_overlay.default <- function(dv, iv, data, common = mean){
 }
 
 #' @export
-ANOVA_overlay.formula <- function(formula, data, common = mean){
-  dvFormula <- as.character(formula[[2]])
-  ivFormula <- as.character(formula[[3]])
-  ANOVA_overlay.default(dvFormula, ivFormula, data, common)
+ANOVA_overlay.formula <- function(x, data, common = mean){
+  dvFormula <- as.character(x[[2]])
+  ivFormula <- as.character(x[[3]])
+  ANOVA_overlay.default(ivFormula, dvFormula, data, common)
 }
