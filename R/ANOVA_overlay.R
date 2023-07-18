@@ -84,10 +84,35 @@ ANOVA_overlay.default <- function(x, y, data, common = mean){
   # (4) residuals
   names(dataResid) <- names(data.eff)
 
-  return(list("data"=tibble::tibble(data.w),
+  # calculate df's
+  dfCondition <- ncol(data.w) - 1
+  dfResiduals <- nrow(data) - ncol(data.w)
+  dfData <- nrow(data) - 1
+
+  # calculate sums of squares
+  ssCondition <- sum((dataOverlay)^2)
+  ssResiduals <- sum((dataResid)^2)
+  ssData <- sum((data.w)^2)
+
+  # calculate mean squares
+  msCondition <- ssCondition/dfCondition
+  msResiduals <- ssResiduals/dfResiduals
+
+  # calculate test statistic
+  fStatistic <- msCondition/msResiduals
+
+  # create source table
+  sourceTable <- tibble::tibble("Source" = c("Condition", "Residuals", "Data"),
+                                "Df" = c(dfCondition, dfResiduals, dfData),
+                                "Sum Sq" = c(ssCondition, ssResiduals, ssData),
+                                "Mean Sq" = c(msCondition, msResiduals, NA),
+                                "F Statistic" = c(fStatistic, NA, NA))
+
+  return(list("overlays" = list("data"=tibble::tibble(data.w),
               "common"=tibble::tibble(dataCommonOverlay),
               "condition"=tibble::tibble(dataOverlay),
-              "residuals"=tibble::tibble(dataResid)))
+              "residuals"=tibble::tibble(dataResid)),
+              "sourceTable" = sourceTable))
 }
 
 #' @export
