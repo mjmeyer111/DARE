@@ -26,10 +26,12 @@
 #' # Showing that the sums of the overlays add up to the data
 #'
 #' toothGrowthOverlays <- ANOVA_overlay("supp", "len", ToothGrowth)
-#' SS_data <- sum((toothGrowthOverlays$data)^2)
-#' SS_overlays <- sum((toothGrowthOverlays$common)^2) + sum((toothGrowthOverlays$condition)^2) +
-#'  sum((toothGrowthOverlays$residuals)^2)
-#' all.equal(SS_data,SS_overlays)
+#' SS_common <- toothGrowthOverlays$overlays$common %>% .^2 %>% sum()
+#' SS_condition <- toothGrowthOverlays$overlays$condition %>% .^2 %>% sum()
+#' SS_residuals <- toothGrowthOverlays$overlays$residuals %>% .^2 %>% sum()
+#' SS_data <- toothGrowthOverlays$overlays$data %>% .^2 %>% sum()
+#' SS_overlays <- SS_common + SS_condition + SS_residuals
+#' all.equal(SS_data, SS_overlays)
 #'}
 #' @export
 ANOVA_overlay <- function(x, ...){
@@ -87,11 +89,13 @@ ANOVA_overlay.default <- function(x, y, data, common = mean){
   # calculate df's
   dfCondition <- ncol(data.w) - 1
   dfResiduals <- nrow(data) - ncol(data.w)
-  dfData <- nrow(data) - 1
+  dfCommon <- 1
+  dfData <- nrow(data)
 
   # calculate sums of squares
   ssCondition <- sum((dataOverlay)^2)
   ssResiduals <- sum((dataResid)^2)
+  ssCommon <- sum((dataCommonOverlay)^2)
   ssData <- sum((data.w)^2)
 
   # calculate mean squares
@@ -102,11 +106,11 @@ ANOVA_overlay.default <- function(x, y, data, common = mean){
   fStatistic <- msCondition/msResiduals
 
   # create source table
-  sourceTable <- tibble::tibble("Source" = c("Condition", "Residuals", "Data"),
-                                "Df" = c(dfCondition, dfResiduals, dfData),
-                                "Sum Sq" = c(ssCondition, ssResiduals, ssData),
-                                "Mean Sq" = c(msCondition, msResiduals, NA),
-                                "F Statistic" = c(fStatistic, NA, NA))
+  sourceTable <- tibble::tibble("Source" = c("Condition", "Residuals", "Common", "Data"),
+                                "Df" = c(dfCondition, dfResiduals, dfCommon, dfData),
+                                "Sum Sq" = c(ssCondition, ssResiduals, ssCommon, ssData),
+                                "Mean Sq" = c(msCondition, msResiduals, NA, NA),
+                                "F Statistic" = c(fStatistic, NA, NA, NA))
 
   return(list("overlays" = list("data"=tibble::tibble(data.w),
               "common"=tibble::tibble(dataCommonOverlay),

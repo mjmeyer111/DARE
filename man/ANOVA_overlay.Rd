@@ -43,9 +43,11 @@ ANOVA_overlay(len~supp, ToothGrowth)
 # Showing that the sums of the overlays add up to the data
 
 toothGrowthOverlays <- ANOVA_overlay("supp", "len", ToothGrowth)
-SS_data <- sum((toothGrowthOverlays$data)^2)
-SS_overlays <- sum((toothGrowthOverlays$common)^2) + sum((toothGrowthOverlays$condition)^2) +
- sum((toothGrowthOverlays$residuals)^2)
-all.equal(SS_data,SS_overlays)
+SS_common <- toothGrowthOverlays$overlays$common \%>\% .^2 \%>\% sum()
+SS_condition <- toothGrowthOverlays$overlays$condition \%>\% .^2 \%>\% sum()
+SS_residuals <- toothGrowthOverlays$overlays$residuals \%>\% .^2 \%>\% sum()
+SS_data <- toothGrowthOverlays$overlays$data \%>\% .^2 \%>\% sum()
+SS_overlays <- SS_common + SS_condition + SS_residuals
+all.equal(SS_data, SS_overlays)
 }
 }
