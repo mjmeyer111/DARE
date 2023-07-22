@@ -8,8 +8,11 @@
 #' @param data tibble or data frame: Your dataset containing your variables.
 #' @param common function: which function should represent the common in the
 #' splitting algorithm?
-#' @return a list of four tibbles, representing the four overlays: the data,
-#' the common, the condition, and the residuals.
+#' @param print.statistic Logical: should the test statistic be printed in the
+#' source table?
+#' @return a list of five tibbles; the first four representing the four overlays --
+#' the data, the common, the condition, and the residuals -- and a fifth tibble
+#' showing the source table of the analysis.
 #' @examples
 #'\dontrun{
 #' # using dplyr to see the data split by condition, assuming a mean common
@@ -39,7 +42,7 @@ ANOVA_overlay <- function(x, ...){
 }
 
 #' @export
-ANOVA_overlay.default <- function(x, y, data, common = mean){
+ANOVA_overlay.default <- function(x, y, data, common = mean, print.statistic = F){
 
   data <- data[,c(y, x)]
 
@@ -108,9 +111,14 @@ ANOVA_overlay.default <- function(x, y, data, common = mean){
   # create source table
   sourceTable <- tibble::tibble("Source" = c("Condition", "Residuals", "Common", "Data"),
                                 "Df" = c(dfCondition, dfResiduals, dfCommon, dfData),
-                                "Sum Sq" = c(ssCondition, ssResiduals, ssCommon, ssData),
-                                "Mean Sq" = c(msCondition, msResiduals, NA, NA),
-                                "F Statistic" = c(fStatistic, NA, NA, NA))
+                                "SumSq" = c(ssCondition, ssResiduals, ssCommon, ssData),
+                                "MeanSq" = c(msCondition, msResiduals, NA, NA))
+
+  # Add F statistic
+  if(print.statistic){
+    sourceTable <- sourceTable %>%
+      tibble::add_column(FStatistic = c(fStatistic, NA, NA, NA))
+  }
 
   return(list("overlays" = list("data"=tibble::tibble(data.w),
               "common"=tibble::tibble(dataCommonOverlay),
@@ -120,8 +128,8 @@ ANOVA_overlay.default <- function(x, y, data, common = mean){
 }
 
 #' @export
-ANOVA_overlay.formula <- function(x, data, common = mean){
+ANOVA_overlay.formula <- function(x, data, common = mean, print.statistic = F){
   dvFormula <- as.character(x[[2]])
   ivFormula <- as.character(x[[3]])
-  ANOVA_overlay.default(ivFormula, dvFormula, data, common)
+  ANOVA_overlay.default(ivFormula, dvFormula, data, common, print.statistic)
 }

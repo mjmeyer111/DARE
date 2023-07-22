@@ -18,10 +18,14 @@ independent variable.}
 
 \item{common}{function: which function should represent the common in the
 splitting algorithm?}
+
+\item{print.statistic}{Logical: should the test statistic be printed in the
+source table?}
 }
 \value{
-a list of four tibbles, representing the four overlays: the data,
-the common, the condition, and the residuals.
+a list of five tibbles; the first four representing the four overlays --
+the data, the common, the condition, and the residuals -- and a fifth tibble
+showing the source table of the analysis.
 }
 \description{
 Splitting your data to construct overlays that mimic the four sections of
