@@ -2,10 +2,12 @@
 
 S3method(ANOVA_split,default)
 S3method(ANOVA_split,formula)
+S3method(plot,dare_overlay)
 export(ANOVA_split)
 export(bayesToG)
 export(bookExercise)
 export(centToFaren)
 export(foldedLog)
+export(gt_overlay)
 export(sFrac)
 export(unifSampDist)

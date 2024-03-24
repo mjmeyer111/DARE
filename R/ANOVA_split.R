@@ -5,11 +5,12 @@
 #' in the form dv ~ iv, where dv is a dependent variable, and iv is an
 #' independent variable.
 #' @param y Character: What is the name of the dependent variable?
-#' @param data tibble or data frame: dataset containing the variables.
-#' @param common function: which function should represent the common in the
-#' splitting algorithm? Note that the function must have an na.rm argument.
-#' @param print.statistic Logical: should the test statistic be printed in the
+#' @param data tibble or data frame: Dataset containing the variables.
+#' @param splitLm an lm object.
+#' @param print.statistic Logical: Should the test statistic be printed in the
 #' source table?
+#' @param show.warnings Logical: Should warnings be shown when converting independent
+#' variables to factors and converting contrasts to sum contrasts?
 #' @return a list of five tibbles; the first four representing the four overlays --
 #' the data, the common, the condition, and the residuals -- and a fifth tibble
 #' showing the source table of the analysis.
@@ -26,6 +27,9 @@
 #' # using ANOVA_split with formula
 #' ANOVA_split(len~supp, ToothGrowth)
 #'
+#' # using ANOVA_split with lm
+#' ANOVA_split(lm(len~supp, ToothGrowth))
+#'
 #' # Showing that the sums of the overlays add up to the data
 #'
 #' toothGrowthOverlays <- ANOVA_split("supp", "len", ToothGrowth)
@@ -41,9 +45,9 @@ ANOVA_split <- function(x, ...){
   UseMethod('ANOVA_split')
 }
 
-ANOVA_split.default <- function(x, y, data, print.statistic = T){
+ANOVA_split.default <- function(x, y, data, print.statistic = T, show.warnings = F){
   modelFormula <- as.formula(paste0(y, "~", x))
-  ANOVA_split.formula(modelFormula, data, print.statistic, tabularOutput)
+  ANOVA_split.formula(modelFormula, data, print.statistic, show.warnings)
 }
 
 # To do:
@@ -64,19 +68,32 @@ ANOVA_split.default <- function(x, y, data, print.statistic = T){
 # lme4 function (lmList) -> run each subject separately and give you a summary
 #
 #
-ANOVA_split.formula <- function(x, data, print.statistic = T){
-  # convert all IVs to factors, if they aren't already
+ANOVA_split.formula <- function(x, data, print.statistic = T, show.warnings = F){
+  IVs <- all.vars(x[-2])
+  numLevels <- sapply(IVs, function(x){length(unique(data[[x]]))})
+
+  # convert all IVs to factors and use sum contrasts, if this isn't the case already
   for(i in IVs){
-    data[[i]] <- factor(data[[i]])
+    if(!is.factor(data[[i]])){
+      if(show.warnings){
+        warning("The variable ",i," is not a factor. Converting to a factor before proceeding.")
+      }
+      data[[i]] <- factor(data[[i]])
+    }
     tempContrast <- contr.sum(numLevels[i])
-    contrasts(data[[i]]) <- tempContrast
+    if(!all(contrasts(data[[i]])==tempContrast)){
+      if(show.warnings){
+        warning("Changing existing contrasts for ",i," to sum contrasts using contr.sum().")
+      }
+      contrasts(data[[i]]) <- tempContrast
+    }
   }
 
   splitLm <- lm(x, data)
-  ANOVA_split.lm(splitLm, print.statistic)
+  ANOVA_split.lm(splitLm, print.statistic, show.warnings)
 }
 
-ANOVA_split.lm <- function(splitLm, print.statistic = T){
+ANOVA_split.lm <- function(splitLm, print.statistic = T, show.warnings = F){
 
   splitFormula <- as.formula(splitLm)
   splitData <- splitLm$model
@@ -85,8 +102,30 @@ ANOVA_split.lm <- function(splitLm, print.statistic = T){
   DV <- as.character(splitFormula[2])
   splitData <- splitData[do.call("order", rev(splitData[IVs])), ]
 
-  numLevels <- sapply(IVs, function(splitFormula){length(unique(splitData[[splitFormula]]))})
+  numLevels <- sapply(IVs, function(x){length(unique(splitData[[x]]))})
   numRows <- nrow(splitData)
+
+  # convert all IVs to factors and use sum contrasts, if this isn't the case already
+  for(i in IVs){
+    if(!is.factor(splitData[[i]])){
+      if(show.warnings){
+        warning("The variable ",i," is not a factor. Converting to a factor before proceeding.")
+      }
+      splitData[[i]] <- factor(splitData[[i]])
+    }
+    tempContrast <- contr.sum(numLevels[i])
+    if(!all(contrasts(splitData[[i]])==tempContrast)){
+      if(show.warnings){
+        warning("Changing existing contrasts for ",i," to sum contrasts using contr.sum().")
+      }
+      contrasts(splitData[[i]]) <- tempContrast
+    }
+  }
+
+  # Update the linear model based on the above changes
+  # update doesn't work, but redoing the lm function does
+  # to do: how to get the above to work without
+  splitLm <- lm(splitFormula, data = splitData)
 
   summaryLm <- summary(splitLm)
   anovaLm <- car::Anova(splitLm, type = "II")
@@ -99,11 +138,12 @@ ANOVA_split.lm <- function(splitLm, print.statistic = T){
   dataCommon <- rep(coefsLm[1,1], times = numRows)
 
   # Residual overlay
+  # To do: use corrected MSE rather than initial MSE
   dataResid <- residuals(summaryLm)
 
   # Effects overlays
   # Computing means using aggregate function
-  listCombIVs <- do.call(c, lapply(seq_along(IVs), combn, splitFormula = IVs, simplify = FALSE))
+  listCombIVs <- do.call(c, lapply(seq_along(IVs), combn, x = IVs, simplify = FALSE))
   namesCombIVs <- sapply(listCombIVs, paste, collapse = "_")
   aggregateFormulas <- sapply(paste0(DV, "~",sapply(listCombIVs, paste, collapse="+")), formula)
   names(aggregateFormulas) <- paste0("mean_",namesCombIVs)
@@ -173,63 +213,3 @@ ANOVA_split.lm <- function(splitLm, print.statistic = T){
   # Return overlays and source/summary tables
   return(invisible(finalList))
 }
-
-# To do: use corrected MSE rather than initial MSE
-plot.dare_overlay <- function(dareANOVAobj){
-  plotData <- tibble::as_tibble(cbind(dareANOVAobj$effectOverlayTable,
-                                      "dataResid"=dareANOVAobj$residualOverlay))
-  plotDataEffWide <- reshape2::melt(plotData,
-                          measure.vars = names(plotData),
-                          variable.name = "Term",
-                          value.name = "value")
-  p <- ggplot2::ggplot() +
-    ggplot2::geom_point(data = plotDataEffWide[plotDataEffWide$Term!="dataResid",],
-                        ggplot2::aes(x = Term, y = value)) +
-    ggplot2::geom_boxplot(data = plotDataEffWide[plotDataEffWide$Term=="dataResid",],
-                          ggplot2::aes(x = Term, y = value)) +
-    ggplot2::ylab("Effect of Residual") +
-    ggplot2::scale_x_discrete(labels = gsub("_", " x ", unique(plotDataEffWide$Term)))
-  print(p)
-}
-
-gt_overlay <- function(dareANOVAobj){
-  IVs <- dareANOVAobj$vars$indVars
-  effFrame <- dareANOVAobj$effectOverlayTable
-  gt_effNames <- gsub("eff_", "", colnames(effFrame))
-  gt_effNames <- gsub("_", " x ", gt_effNames)
-
-  effOnlyData <- tibble::as_tibble(cbind(dareANOVAobj$originalData[,IVs],
-                                         "dataCommon"=dareANOVAobj$commonOverlay,
-                                         effFrame))
-
-  gt_effect_table <- effOnlyData |>
-    distinct() |>
-    gt::gt() |>
-    gt::tab_header(
-      title = "Effects" # paste("Effects of", dareANOVAobj$dataObjName)
-    ) |> gt::tab_spanner(
-      label = "Variables",
-      columns = IVs
-    ) |> gt::tab_spanner(
-      label = "Common",
-      columns = dataCommon,
-    ) |> gt::tab_spanner(
-      label = "Effects",
-      columns = colnames(effFrame)
-    ) |> gt::cols_label(
-      dataCommon = "common"
-    ) |> gt::cols_label(
-      .list=structure(as.list(gt_effNames), names = colnames(effFrame))
-    ) |> gt::fmt_number(
-      columns = matches("^eff_|common"),
-      decimals = 2
-    )
-  print(gt_effect_table)
-}
-
-toothGrowthANOVASplit <- ANOVA_split(len~supp*dose, ToothGrowth)
-plot(toothGrowthANOVASplit)
-gt_overlay(toothGrowthANOVASplit)
-
-toothGrowthANOVASplit |> plot()
-toothGrowthANOVASplit |> gt_overlay()
