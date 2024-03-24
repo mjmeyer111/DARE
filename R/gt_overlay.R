@@ -22,7 +22,7 @@ gt_overlay <- function(dareANOVAobj){
                                          effFrame))
 
   gt_effect_table <- effOnlyData |>
-    distinct() |>
+    dplyr::distinct() |>
     gt::gt() |>
     gt::tab_header(
       title = "Effects" # paste("Effects of", dareANOVAobj$dataObjName)
