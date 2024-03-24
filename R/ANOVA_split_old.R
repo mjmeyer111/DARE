@@ -58,7 +58,7 @@ ANOVA_split.default <- function(x, y, data, common = mean, print.statistic = F){
   }))
 
   # Split the mood data into overlays
-  data.mn <- sapply(data.w, common, na.rm = TRUE)
+  data.mn <- sapply(data.w, mean, na.rm = TRUE)
 
   # sweep:
   dataResid <- sweep(data.w, MARGIN = 2, STATS = data.mn)

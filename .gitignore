@@ -4,3 +4,6 @@ dta/.DS_Store
 dta/EgoDepletion/.DS_Store
 dta/Myers3rdEd/.DS_Store
 .Rhistory
+.DS_Store
+.Rbuildignore
+.Rhistory
