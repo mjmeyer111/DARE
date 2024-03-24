@@ -20,6 +20,7 @@ Imports:
 	janitor,
 	tibble,
 	ggplot2,
+	car,
 	gt
 Depends: 
     R (>= 2.10)

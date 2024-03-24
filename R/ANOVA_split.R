@@ -46,7 +46,7 @@ ANOVA_split <- function(x, ...){
 }
 
 #' @export
-ANOVA_split.default <- function(x, y, data, print.statistic = T, show.warnings = F){
+ANOVA_split.default <- function(x, y, data, print.statistic = F, show.warnings = F){
   modelFormula <- as.formula(paste0(y, "~", x))
   ANOVA_split.formula(modelFormula, data, print.statistic, show.warnings)
 }
@@ -71,7 +71,7 @@ ANOVA_split.default <- function(x, y, data, print.statistic = T, show.warnings =
 #
 
 #' @export
-ANOVA_split.formula <- function(x, data, print.statistic = T, show.warnings = F){
+ANOVA_split.formula <- function(x, data, print.statistic = F, show.warnings = F){
   IVs <- all.vars(x[-2])
   numLevels <- sapply(IVs, function(x){length(unique(data[[x]]))})
 
@@ -97,7 +97,7 @@ ANOVA_split.formula <- function(x, data, print.statistic = T, show.warnings = F)
 }
 
 #' @export
-ANOVA_split.lm <- function(splitLm, print.statistic = T, show.warnings = F){
+ANOVA_split.lm <- function(splitLm, print.statistic = F, show.warnings = F){
 
   splitFormula <- as.formula(splitLm)
   splitData <- splitLm$model
@@ -132,7 +132,8 @@ ANOVA_split.lm <- function(splitLm, print.statistic = T, show.warnings = F){
   splitLm <- lm(splitFormula, data = splitData)
 
   summaryLm <- summary(splitLm)
-  anovaLm <- car::Anova(splitLm, type = "II")
+  # 4th column should always be the p-value column
+  anovaLm <- car::Anova(splitLm, type = "II")[,-4]
   coefsLm <- coefficients(summaryLm)
   # Split the data into overlays
   # data overlay
