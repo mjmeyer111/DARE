@@ -45,6 +45,7 @@ ANOVA_split <- function(x, ...){
   UseMethod('ANOVA_split')
 }
 
+#' @export
 ANOVA_split.default <- function(x, y, data, print.statistic = T, show.warnings = F){
   modelFormula <- as.formula(paste0(y, "~", x))
   ANOVA_split.formula(modelFormula, data, print.statistic, show.warnings)
@@ -68,6 +69,8 @@ ANOVA_split.default <- function(x, y, data, print.statistic = T, show.warnings =
 # lme4 function (lmList) -> run each subject separately and give you a summary
 #
 #
+
+#' @export
 ANOVA_split.formula <- function(x, data, print.statistic = T, show.warnings = F){
   IVs <- all.vars(x[-2])
   numLevels <- sapply(IVs, function(x){length(unique(data[[x]]))})
@@ -93,6 +96,7 @@ ANOVA_split.formula <- function(x, data, print.statistic = T, show.warnings = F)
   ANOVA_split.lm(splitLm, print.statistic, show.warnings)
 }
 
+#' @export
 ANOVA_split.lm <- function(splitLm, print.statistic = T, show.warnings = F){
 
   splitFormula <- as.formula(splitLm)

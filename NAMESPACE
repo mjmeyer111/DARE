@@ -2,6 +2,7 @@
 
 S3method(ANOVA_split,default)
 S3method(ANOVA_split,formula)
+S3method(ANOVA_split,lm)
 S3method(plot,dare_overlay)
 export(ANOVA_split)
 export(bayesToG)

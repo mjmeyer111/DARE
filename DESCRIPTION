@@ -1,6 +1,6 @@
 Package: DARE
 Title: What the Package Does (One Line, Title Case)
-Version: 0.2023.09.26
+Version: 0.2024.03.24
 Authors@R: 
     person("Michael", "Kubovy", , "mk9y@virginia.edu", role = c("aut", "cre"),
            comment = c(ORCID = "YOUR-ORCID-ID"))
@@ -17,7 +17,9 @@ RoxygenNote: 7.2.3
 Imports:
 	tidyverse,
 	janitor,
-	tibble
+	tibble,
+	ggplot2,
+	gt
 Depends: 
     R (>= 2.10)
 LazyData: true

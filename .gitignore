@@ -6,4 +6,4 @@ dta/Myers3rdEd/.DS_Store
 .Rhistory
 .DS_Store
 .Rbuildignore
-.Rhistory
+R_temp/
