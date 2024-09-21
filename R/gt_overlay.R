@@ -1,6 +1,7 @@
 #' Summarize ANOVA overlays as a gt_effect_table.
 #'
 #' @param dareANOVAobj Object with dare_overlay class
+#' @param latex Should gt_overlay output LaTeX code?
 #' @return a gt_effect_table containing variables and effects from overlay
 #' @examples
 #'\dontrun{
@@ -11,7 +12,7 @@
 #' ANOVA_split(len~supp*dose, ToothGrowth) |> gt_overlay()
 #'}
 #' @export
-gt_overlay <- function(dareANOVAobj){
+gt_overlay <- function(dareANOVAobj, latex=F){
   IVs <- dareANOVAobj$vars$indVars
   effFrame <- dareANOVAobj$effectOverlayTable
   gt_effNames <- gsub("eff_", "", colnames(effFrame))
@@ -43,5 +44,9 @@ gt_overlay <- function(dareANOVAobj){
       columns = matches("^eff_|common"),
       decimals = 2
     )
-  print(gt_effect_table)
+  if(latex){
+    return(as.character(gt::as_latex(gt_effect_table)))
+  } else {
+    print(gt_effect_table)
+  }
 }

@@ -52,7 +52,7 @@ ANOVA_split.default <- function(x, y, data, print.statistic = F, show.warnings =
 }
 
 # To do:
-# Remove ANOVA p-values (keep it, but remove it as the default)
+# Add option to add ANOVA p-values back in
 # ANOVA: add MSE, corrected MSE, AIC + BIC
 # Replace if-else statement with more generalizable code
 # Bring back dimensional arrays - see table 6-9 (pg. 131) in Exploratory

@@ -1,4 +1,2 @@
-^DARE\.Rproj$
+^.*\.Rproj$
 ^\.Rproj\.user$
-^data-raw$
-^dta$

@@ -4,10 +4,12 @@
 \alias{gt_overlay}
 \title{Summarize ANOVA overlays as a gt_effect_table.}
 \usage{
-gt_overlay(dareANOVAobj)
+gt_overlay(dareANOVAobj, latex = F)
 }
 \arguments{
 \item{dareANOVAobj}{Object with dare_overlay class}
+
+\item{latex}{Should gt_overlay output LaTeX code?}
 }
 \value{
 a gt_effect_table containing variables and effects from overlay
