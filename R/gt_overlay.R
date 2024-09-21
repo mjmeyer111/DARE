@@ -45,7 +45,7 @@ gt_overlay <- function(dareANOVAobj, latex=F){
       decimals = 2
     )
   if(latex){
-    return(as.character(gt::as_latex(gt_effect_table)))
+    return(cat(as.character(gt::as_latex(gt_effect_table))))
   } else {
     print(gt_effect_table)
   }
